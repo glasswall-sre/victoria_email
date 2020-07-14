@@ -12,7 +12,7 @@ import aiorun
 import click
 from victoria.plugin import Plugin
 
-from . import load_test, schemas, reconstruct_mail, replay_deadletters
+from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_mail
 
 
 def ensure_mailtoil(cfg: schemas.EmailConfig) -> None:
@@ -131,6 +131,37 @@ def replay(cfg: schemas.EmailConfig, cluster: str) -> None:
     """
     ensure_mailtoil(cfg)
     replay_deadletters.replay(cfg.mail_toil, cluster)
+
+
+@root_cmd.command()
+@click.argument("cluster", nargs=1, type=str)
+@click.option("-i",
+              "--input",
+              metavar="FILE",
+              type=str,
+              required=True,
+              help="TXT file containing transaction IDs to replay.")
+@click.option("-o",
+              "--output",
+              metavar="URL",
+              type=str,
+              required=True,
+              help="The SMTP endpoint to replay mail to.")
+@click.pass_obj
+def recover(cfg: schemas.EmailConfig, cluster: str, input: str,
+            output: str) -> None:
+    """Replay mail from blob storage through SaaS.
+
+    To be used in the event of a failure causing mail to be persisted to
+    blob storage but not sent onwards from SMTP receiver - being lost into
+    the void.
+
+    \b
+    Usage example:
+    $ victoria email recover uksprod -i tx-ids.txt -o localhost:25
+    """
+    ensure_mailtoil(cfg)
+    recover_mail.recover(cfg.mail_toil, cluster, input, output)
 
 
 # plugin entry point
