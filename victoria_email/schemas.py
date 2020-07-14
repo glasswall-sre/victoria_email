@@ -10,6 +10,8 @@ from uuid import UUID
 
 from marshmallow import Schema, fields, post_load, validate
 
+from .core.config import MailToilConfigSchema, MailToilConfig
+
 
 class LoadTestConfigSchema(Schema):
     """Marshmallow schema for the load testing config section."""
@@ -48,6 +50,9 @@ class EmailConfigSchema(Schema):
     load_test = fields.Nested(LoadTestConfigSchema,
                               required=True,
                               allow_none=False)
+    mail_toil = fields.Nested(MailToilConfigSchema,
+                              required=True,
+                              allow_none=False)
 
     @post_load
     def make_config(self, data, **kwargs):
@@ -60,5 +65,7 @@ class EmailConfig:
 
     Attributes:
         load_test: The config for the load testing command.
+        mail_toil: The config for the mail toil commands.
     """
     load_test: LoadTestConfig
+    mail_toil: MailToilConfig

@@ -5,6 +5,8 @@ A Victoria plugin for managing the FileTrust Rebuild for Email platform.
 Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
+from typing import List, Optional
+
 import aiorun
 import click
 from victoria.plugin import Plugin
@@ -68,6 +70,46 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
     loop.run_until_complete(
         load_test.perform_load_test(frequency, endpoint, duration, recipient,
                                     sender, cfg.load_test))
+
+
+@root_cmd.command()
+@click.argument("cluster", nargs=1, type=str)
+@click.option("-o",
+              "--output",
+              type=str,
+              required=True,
+              help="The directory to write reconstructed mail to.")
+@click.option("-a", "--anon", type=bool, is_flag=True)
+@click.option("-i",
+              "--transaction-id",
+              multiple=True,
+              type=str,
+              help="Cherry-pick GUIDs from blob storage to reconstruct. "
+              "This bypasses dead letter scanning.")
+@click.option(
+    "-s",
+    "--start",
+    type=str,
+    help=
+    "Start date for the containers to query using the 'last modified' field "
+    "in format DD/MM/YYYY.")
+@click.option(
+    "-e",
+    "--end",
+    type=str,
+    help=
+    "End date for the containers to query using the 'last modified' field in "
+    "format DD/MM/YYYY.")
+@click.option(
+    "-t",
+    "--target",
+    type=str,
+    help="Upon getting the received MIME message, interrogate using the target "
+    "string e.g. sentfrom@emailaddress.com.")
+def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
+                anon: bool, transaction_id: List[str], start: Optional[str],
+                end: Optional[str], target: Optional[str]) -> None:
+    pass
 
 
 # plugin entry point
