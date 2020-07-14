@@ -16,42 +16,13 @@ from marshmallow import Schema, fields, post_load, EXCLUDE, ValidationError
 import yaml
 
 
-class StorageAccountSchema(Schema):
-    """StorageAccountSchema is a schema used to validate storage account config.
-
-    Attributes:
-        account_name (fields.Str): The storage account name.
-        key (fields.Str): The storage account access key.
-    """
-    account_name = fields.Str(required=True)
-    key = fields.Str(required=True)
-
-    @post_load
-    def make_storage_account(self, data, **kwargs):
-        """Callback used by marshmallow after loading object. We're using it here
-        to create an instance of Config after loading the data."""
-        return StorageAccount(**data)
-
-
-class StorageAccount():
-    """StorageAccount is used to store storage account config.
-
-    Attributes:
-        account_name (str): The storage account name.
-        key (str): The storage account access key.
-    """
-    def __init__(self, account_name: str, key: str) -> None:
-        self.account_name = account_name
-        self.key = key
-
-
 class MailToilConfigSchema(Schema):
     """ConfigSchema is a marshmallow schema used for validating loaded configs.
 
     Fields:
         service_bus_connection_strings (fields.Dict[str, str]): Mapping of cluster names to service bus connection strings.
         queues (fields.List[str]): List of queue names to search for dead letters.
-        storage_connection_strings (fields.Dict[str, StorageAccount]): Mapping of cluster names to storage accounts.
+        storage_connection_strings (fields.Dict[str, str]): Mapping of cluster names to storage accounts.
         vault_dir (fields.Str): The path to the vault.
     """
     service_bus_connection_strings = fields.Dict(keys=fields.Str(),
@@ -59,7 +30,7 @@ class MailToilConfigSchema(Schema):
                                                  required=True)
     queues = fields.List(fields.Str(), required=True)
     storage_accounts = fields.Dict(keys=fields.Str(),
-                                   values=fields.Nested(StorageAccountSchema),
+                                   values=fields.Str(),
                                    required=True)
     vault_dir = fields.Str(required=True)
 
@@ -80,12 +51,11 @@ class MailToilConfig:
     Attributes:
         service_bus_connection_strings (Dict[str, str]): Mapping of cluster names to service bus connection strings.
         queues (List[str]): List of queue names to search for dead letters.
-        storage_connection_strings (Dict[str, StorageAccount]): Mapping of cluster names to storage accounts.
+        storage_connection_strings (Dict[str, str]): Mapping of cluster names to storage account connection strings.
         vault_dir (str): The path to the vault
     """
     def __init__(self, service_bus_connection_strings: Dict[str, str],
-                 queues: List[str], storage_accounts: Dict[str,
-                                                           StorageAccount],
+                 queues: List[str], storage_accounts: Dict[str, str],
                  vault_dir: str) -> None:
         self.service_bus_connection_strings = service_bus_connection_strings
         self.queues = queues

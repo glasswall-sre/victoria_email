@@ -11,7 +11,7 @@ import aiorun
 import click
 from victoria.plugin import Plugin
 
-from . import load_test, schemas
+from . import load_test, schemas, reconstruct_mail
 
 
 @click.group()
@@ -86,30 +86,27 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
               type=str,
               help="Cherry-pick GUIDs from blob storage to reconstruct. "
               "This bypasses dead letter scanning.")
-@click.option(
-    "-s",
-    "--start",
-    type=str,
-    help=
-    "Start date for the containers to query using the 'last modified' field "
-    "in format DD/MM/YYYY.")
-@click.option(
-    "-e",
-    "--end",
-    type=str,
-    help=
-    "End date for the containers to query using the 'last modified' field in "
-    "format DD/MM/YYYY.")
-@click.option(
-    "-t",
-    "--target",
-    type=str,
-    help="Upon getting the received MIME message, interrogate using the target "
-    "string e.g. sentfrom@emailaddress.com.")
+@click.pass_obj
 def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
-                anon: bool, transaction_id: List[str], start: Optional[str],
-                end: Optional[str], target: Optional[str]) -> None:
-    pass
+                anon: bool, transaction_id: List[str]) -> None:
+    """Reconstruct mail from blob storage.
+
+    Can also scan dead letter queues to find mail that needs to be reconstructed.
+
+    \b
+    Reconstruct mail in dead letters:
+    $ victoria email reconstruct uksprod1 -o output_dir
+
+    \b
+    Reconstruct a specific transaction ID
+    $ victoria email reconstruct useprod2 -i <guid> -o output_dir
+
+    \b
+    Reconstruct a specific transaction ID, anonymising contents
+    $ victoria email reconstruct useprod4 -i <guid> -o output_dir --anon
+    """
+    reconstruct_mail.reconstruct(cfg.mail_toil, cluster, output,
+                                 transaction_id, anon)
 
 
 # plugin entry point
