@@ -6,6 +6,7 @@ Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
 from dataclasses import dataclass
+from typing import Optional
 from uuid import UUID
 
 from marshmallow import Schema, fields, post_load, validate
@@ -51,8 +52,9 @@ class EmailConfigSchema(Schema):
                               required=True,
                               allow_none=False)
     mail_toil = fields.Nested(MailToilConfigSchema,
-                              required=True,
-                              allow_none=False)
+                              required=False,
+                              allow_none=True,
+                              missing=None)
 
     @post_load
     def make_config(self, data, **kwargs):
@@ -68,4 +70,4 @@ class EmailConfig:
         mail_toil: The config for the mail toil commands.
     """
     load_test: LoadTestConfig
-    mail_toil: MailToilConfig
+    mail_toil: Optional[MailToilConfig]

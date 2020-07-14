@@ -5,13 +5,22 @@ A Victoria plugin for managing the FileTrust Rebuild for Email platform.
 Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
+import logging
 from typing import List, Optional
 
 import aiorun
 import click
 from victoria.plugin import Plugin
 
-from . import load_test, schemas, reconstruct_mail
+from . import load_test, schemas, reconstruct_mail, replay_deadletters
+
+
+def ensure_mailtoil(cfg: schemas.EmailConfig) -> None:
+    if cfg.mail_toil is None:
+        logging.error(
+            "You need to configure the 'mail_toil' section of your config to use this command!"
+        )
+        raise SystemExit(1)
 
 
 @click.group()
@@ -105,8 +114,23 @@ def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
     Reconstruct a specific transaction ID, anonymising contents
     $ victoria email reconstruct useprod4 -i <guid> -o output_dir --anon
     """
+    ensure_mailtoil(cfg)
     reconstruct_mail.reconstruct(cfg.mail_toil, cluster, output,
                                  transaction_id, anon)
+
+
+@root_cmd.command()
+@click.argument("cluster", nargs=1, type=str)
+@click.pass_obj
+def replay(cfg: schemas.EmailConfig, cluster: str) -> None:
+    """Replay mail in service bus dead letters.
+
+    \b
+    To replay mail from a cluster:
+    $ victoria email replay uksprod1
+    """
+    ensure_mailtoil(cfg)
+    replay_deadletters.replay(cfg.mail_toil, cluster)
 
 
 # plugin entry point
