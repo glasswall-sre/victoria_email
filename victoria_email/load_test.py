@@ -73,7 +73,8 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
     async with session.post(
         load_test_config.mail_send_function_endpoint,
         json=req_body,
-        params={"code": load_test_config.mail_send_function_code}) as resp:
+        params={"code": load_test_config.mail_send_function_code},
+        timeout=aiohttp.ClientTimeout(total=None)) as resp:
         time_now = datetime.now()
         return TestResult(resp.status, await resp.text(), time_now)
 
@@ -91,7 +92,8 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         sender: The email address to send with.
         load_test_config: The config for the load tester.
     """
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(
+            total=None)) as session:
         # between each test we wait for 1/frequency seconds
         wait_interval = 1.0 / frequency
         number_of_intervals = int(frequency * duration)
