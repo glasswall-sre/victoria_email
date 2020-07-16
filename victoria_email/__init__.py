@@ -12,7 +12,7 @@ import aiorun
 import click
 from victoria.plugin import Plugin
 
-from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_mail
+from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_mail, send_mail
 
 
 def ensure_mailtoil(cfg: schemas.EmailConfig) -> None:
@@ -162,6 +162,22 @@ def recover(cfg: schemas.EmailConfig, cluster: str, input: str,
     """
     ensure_mailtoil(cfg)
     recover_mail.recover(cfg.mail_toil, cluster, input, output)
+
+
+@root_cmd.command()
+@click.argument("manifest", nargs=1, type=str)
+def send(manifest: str) -> None:
+    """Send mail specified by manifest files.
+
+    For information about the manifest format, please see the README:
+    https://github.com/glasswall-sre/victoria_email
+
+    \b
+    Usage example:
+    $ victoria email send uksprod.yaml
+    """
+    loaded_manifest = send_mail.Manifest.load(manifest)
+    send_mail.send_manifest(loaded_manifest)
 
 
 # plugin entry point
