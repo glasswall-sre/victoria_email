@@ -7,6 +7,7 @@ Author:
 """
 from dataclasses import dataclass
 from uuid import UUID
+from typing import List
 
 from marshmallow import Schema, fields, post_load, validate
 
@@ -19,9 +20,8 @@ class LoadTestConfigSchema(Schema):
                                                  relative=False,
                                                  schemes="https"))
     mail_send_function_code = fields.Str(required=True, allow_none=False)
-    tenant_id = fields.UUID(required=True, allow_none=False)
+    tenant_ids = fields.List(fields.UUID(required=True, allow_none=False))
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
-
     @post_load
     def make_config(self, data, **kwargs):
         return LoadTestConfig(**data)
@@ -34,12 +34,12 @@ class LoadTestConfig:
     Attributes:
         mail_send_function_endpoint: The HTTP endpoint of the going-postal backend.
         mail_send_function_code: The auth code to use the Azure function backend.
-        tenant_id: The tenant ID to attach to the sent tests.
+        tenant_ids: The tenant ID/s to attach to the sent tests.
         timeout: The SMTP sending timeout to use.
     """
     mail_send_function_endpoint: str
     mail_send_function_code: str
-    tenant_id: UUID
+    tenant_ids: List[UUID]
     timeout: float
 
 
