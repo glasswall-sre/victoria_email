@@ -7,7 +7,7 @@ Victoria plugin for managing the Glasswall Rebuild for Email platform.
 ## User guide
 
 ### Prerequisites
-- Python 3.6+
+- Python 3.7+
 - Pip
 
 ### Installation
@@ -70,7 +70,7 @@ $ victoria email loadtest -e smtp.example.com:465 -s test@example.com -r test@ex
 ## Developer guide
 
 ### Prerequisites
-- Python 3.6+
+- Python 3.7+
 - Pipenv
 
 ### Quick start
