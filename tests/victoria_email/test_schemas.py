@@ -39,3 +39,4 @@ def test_make_config_no_tenants():
             email_schema = schemas.EmailConfigSchema()
             ret = email_schema.load(yaml_obj)
         
+        
