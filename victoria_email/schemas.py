@@ -34,7 +34,7 @@ class LoadTestConfig:
     Attributes:
         mail_send_function_endpoint: The HTTP endpoint of the going-postal backend.
         mail_send_function_code: The auth code to use the Azure function backend.
-        tenant_ids: The tenant ID/s to attach to the sent tests.
+        tenant_ids: The tenant ID(s) to attach to the sent tests.
         timeout: The SMTP sending timeout to use.
     """
     mail_send_function_endpoint: str

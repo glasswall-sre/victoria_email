@@ -30,7 +30,7 @@ email:
   load_test:
     mail_send_function_endpoint: https://sls-weur-dev-going-postal.azurewebsites.net/api/send
     mail_send_function_code: <the code to access the Azure Function>
-    tenant_ids: [<the tenant ID to attach to the email>]
+    tenant_ids: [<tenant ID(s) to attach to the email>]
     timeout: 10.0
 ```
 
