@@ -20,7 +20,7 @@ class LoadTestConfigSchema(Schema):
                                                  relative=False,
                                                  schemes="https"))
     mail_send_function_code = fields.Str(required=True, allow_none=False)
-    tenant_ids = fields.List(fields.UUID(required=True, allow_none=False))
+    tenant_ids = fields.List(fields.UUID(required=True, allow_none=False), validate=validate.Length(min=1))
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
     @post_load
     def make_config(self, data, **kwargs):

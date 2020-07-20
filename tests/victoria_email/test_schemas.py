@@ -1,6 +1,7 @@
 import pytest
 import victoria_email.schemas as schemas
 import yaml
+import marshmallow
 
 def test_make_config_single_tenant():
     # Arrange
@@ -33,7 +34,8 @@ def test_make_config_no_tenants():
         file_content = f.read()
         yaml_obj = yaml.load(file_content)
         # Act
-        email_schema = schemas.EmailConfigSchema()
-        ret = email_schema.load(yaml_obj)
         # Assert
-        assert len(ret.load_test.tenant_ids) == 0
+        with pytest.raises(marshmallow.exceptions.ValidationError):    
+            email_schema = schemas.EmailConfigSchema()
+            ret = email_schema.load(yaml_obj)
+        
