@@ -25,3 +25,15 @@ def test_make_config_multiple_tenants():
         ret = email_schema.load(yaml_obj)
         # Assert
         assert len(ret.load_test.tenant_ids) == 2
+
+
+def test_make_config_no_tenants():
+    # Arrange
+    with open("./tests/victoria_email/test_no_tenant.yaml", "r") as f:
+        file_content = f.read()
+        yaml_obj = yaml.load(file_content)
+        # Act
+        email_schema = schemas.EmailConfigSchema()
+        ret = email_schema.load(yaml_obj)
+        # Assert
+        assert len(ret.load_test.tenant_ids) == 0
