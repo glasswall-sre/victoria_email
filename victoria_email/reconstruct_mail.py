@@ -50,7 +50,17 @@ def get_dead_letters_from_service_bus(cluster: str, cfg: config.MailToilConfig,
 
 def reconstruct(cfg: config.MailToilConfig, cluster: str, output_dir: str,
                 transaction_ids: List[str], anonymise: bool,
-                plugin_cfg: EmailConfig):
+                plugin_cfg: EmailConfig) -> None:
+    """Perform the reconstruct functionality.
+
+    Args:
+        cfg: The mail toil config.
+        cluster: The cluster to grab transactions from.
+        output_dir: Where to write the reconstructed mail to.
+        transaction_ids: The tx IDs to reconstruct.
+        anonymise: Whether we should anonymise.
+        plugin_cfg: The email plugin config object.
+    """
     encryption_provider = plugin_cfg.victoria_config.get_encryption()
     service_bus_conn_str = encryption_provider.decrypt_str(
         cfg.get_service_bus_connection_str(cluster))

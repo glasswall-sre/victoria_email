@@ -19,6 +19,15 @@ from .schemas import EmailConfig
 
 def recover(cfg: config.MailToilConfig, cluster: str, input_file: str,
             smtp_addr: str, plugin_cfg: EmailConfig) -> None:
+    """Perform the mailtoil recover functionality.
+
+    Args:
+        cfg: The mail toil config.
+        cluster: The cluster to recover.
+        input_file: The file path to the input tx ID txt file.
+        smtp_addr: The SMTP address to send to.
+        plugin_cfg: The email plugin config object.
+    """
     encryption_provider = plugin_cfg.victoria_config.get_encryption()
     storage_conn_str = encryption_provider.decrypt_str(
         cfg.get_storage_account(cluster))

@@ -12,6 +12,8 @@ ANONYMISED_SUFFIX = "_anon"
 """The suffix to put on a file that has been anonymised."""
 
 EMAIL_PATTERN = "<(.*?)>"
+"""A regex pattern to get the RFC5322 addr-spec from an email address string.
+Even with an optional display-name present."""
 
 
 def preprocess_mime_message(mime_message: str) -> str:

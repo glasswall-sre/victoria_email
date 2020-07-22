@@ -6,7 +6,10 @@ from azure.common import AzureMissingResourceHttpError
 from azure.storage.blob import BlobServiceClient
 import azure.storage.blob
 
-# sometimes it's in different places...
+# sometimes it's in different places in the blob storage container, not
+# sure what causes this or even if it's still an issue but in November-ish 2019
+# we had reconstructions that weren't working due to Received/MimeMessage not
+# being present - so we always need to check for both of these
 MIME_BLOB_NAMES = [
     "Received/MimeMessage",
     "MessageInspectionQueue/Glasswall.FileTrust.Messaging.ReceivedMessage.json"
@@ -39,7 +42,7 @@ def get_mime_message(transaction_id: str,
     """
     for blob_name in MIME_BLOB_NAMES:
         try:
-            print(transaction_id, blob_name)
+            logging.debug(transaction_id, blob_name)
             blob_client = blob_service.get_blob_client(transaction_id.lower(),
                                                        blob_name)
             blob = blob_client.download_blob()

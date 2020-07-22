@@ -48,6 +48,13 @@ def create_vault(queues: List[str], cluster: str, vault_dir: str) -> None:
 
 
 def replay(cfg: config.MailToilConfig, cluster: str, plugin_cfg: EmailConfig):
+    """Perform the mailtoil replay functionality.
+
+    Args:
+        cfg: The mail toil config.
+        cluster: The cluster to replay from.
+        plugin_cfg: The email plugin config.
+    """
     encryption_provider = plugin_cfg.victoria_config.get_encryption()
     service_bus_conn_str = encryption_provider.decrypt_str(
         cfg.get_service_bus_connection_str(cluster))

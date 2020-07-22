@@ -1,3 +1,10 @@
+"""service_bus
+
+This module implements various functionality related to Azure Service Bus.
+
+Author:
+    Sam Gibson <sgibson@glasswallsolutions.com>
+"""
 import logging
 from typing import List
 from os.path import join
@@ -10,6 +17,13 @@ from azure.servicebus import ReceiveSettleMode
 
 def get_all_dead_letter_ids(queue_str: str,
                             client: ServiceBusClient) -> List[str]:
+    """Get a list of all message IDs in the dead letter queue of a given
+    queue.
+
+    Args:
+        queue_str: The name of the queue.
+        client: The service bus client.
+    """
     logging.info(f"--> Getting dead letters from '{queue_str}'...")
     dead_letters = []
     queue = client.get_queue(queue_str)
