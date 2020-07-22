@@ -13,6 +13,7 @@ from typing import List
 
 from .core import config
 from .core import service_bus
+from .schemas import EmailConfig
 
 
 def create_vault(queues: List[str], cluster: str, vault_dir: str) -> None:
@@ -46,12 +47,18 @@ def create_vault(queues: List[str], cluster: str, vault_dir: str) -> None:
             pass
 
 
-def replay(cfg: config.MailToilConfig, cluster: str):
+def replay(cfg: config.MailToilConfig, cluster: str, plugin_cfg: EmailConfig):
+    encryption_provider = plugin_cfg.victoria_config.get_encryption()
+    service_bus_conn_str = encryption_provider.decrypt_str(
+        cfg.get_service_bus_connection_str(cluster))
+    if service_bus_conn_str is None:
+        raise SystemExit(1)
+
     # create the vault
     create_vault(cfg.queues, cluster, cfg.vault_dir)
 
     # connect to the service bus
-    client = service_bus.connect(cfg.get_service_bus_connection_str(cluster))
+    client = service_bus.connect(service_bus_conn_str)
 
     # scan for and resend dead letters on each queue in the config
     resent_transaction_ids = []

@@ -16,7 +16,17 @@ from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_
 
 
 def ensure_mailtoil(cfg: schemas.EmailConfig) -> None:
+    """Logs an error and exits if mailtoil is not present in config."""
     if cfg.mail_toil is None:
+        logging.error(
+            "You need to configure the 'mail_toil' section of your config to use this command!"
+        )
+        raise SystemExit(1)
+
+
+def ensure_loadtest(cfg: schemas.EmailConfig) -> None:
+    """Logs an error and exits if loadtest is not present in config."""
+    if cfg.load_test is None:
         logging.error(
             "You need to configure the 'mail_toil' section of your config to use this command!"
         )
@@ -116,7 +126,7 @@ def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
     """
     ensure_mailtoil(cfg)
     reconstruct_mail.reconstruct(cfg.mail_toil, cluster, output,
-                                 transaction_id, anon)
+                                 transaction_id, anon, cfg)
 
 
 @root_cmd.command()
@@ -130,7 +140,7 @@ def replay(cfg: schemas.EmailConfig, cluster: str) -> None:
     $ victoria email replay uksprod1
     """
     ensure_mailtoil(cfg)
-    replay_deadletters.replay(cfg.mail_toil, cluster)
+    replay_deadletters.replay(cfg.mail_toil, cluster, cfg)
 
 
 @root_cmd.command()
@@ -161,7 +171,7 @@ def recover(cfg: schemas.EmailConfig, cluster: str, input: str,
     $ victoria email recover uksprod -i tx-ids.txt -o localhost:25
     """
     ensure_mailtoil(cfg)
-    recover_mail.recover(cfg.mail_toil, cluster, input, output)
+    recover_mail.recover(cfg.mail_toil, cluster, input, output, cfg)
 
 
 @root_cmd.command()

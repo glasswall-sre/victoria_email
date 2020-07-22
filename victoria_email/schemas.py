@@ -49,8 +49,9 @@ class LoadTestConfig:
 class EmailConfigSchema(Schema):
     """Marshmallow schema for the email plugin config."""
     load_test = fields.Nested(LoadTestConfigSchema,
-                              required=True,
-                              allow_none=False)
+                              required=False,
+                              allow_none=True,
+                              missing=None)
     mail_toil = fields.Nested(MailToilConfigSchema,
                               required=False,
                               allow_none=True,
