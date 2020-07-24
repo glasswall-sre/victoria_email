@@ -63,7 +63,7 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
     req_body = {
         "endpoint": endpoint,
         "port": int(port),
-        "tenant_ids": str( [str(tenant_id) for tenant_id in load_test_config.tenant_ids] ),
+        "tenant_ids": [str(tenant_id) for tenant_id in load_test_config.tenant_ids],
         "recipient": recipient,
         "sender": sender,
         "timeout": load_test_config.timeout
