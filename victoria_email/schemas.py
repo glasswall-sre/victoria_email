@@ -6,10 +6,13 @@ Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
 from dataclasses import dataclass
+from typing import Optional
 from uuid import UUID
 from typing import List
 
 from marshmallow import Schema, fields, post_load, validate
+
+from .core.config import MailToilConfigSchema, MailToilConfig
 
 
 class LoadTestConfigSchema(Schema):
@@ -46,8 +49,13 @@ class LoadTestConfig:
 class EmailConfigSchema(Schema):
     """Marshmallow schema for the email plugin config."""
     load_test = fields.Nested(LoadTestConfigSchema,
-                              required=True,
-                              allow_none=False)
+                              required=False,
+                              allow_none=True,
+                              missing=None)
+    mail_toil = fields.Nested(MailToilConfigSchema,
+                              required=False,
+                              allow_none=True,
+                              missing=None)
 
     @post_load
     def make_config(self, data, **kwargs):
@@ -60,5 +68,7 @@ class EmailConfig:
 
     Attributes:
         load_test: The config for the load testing command.
+        mail_toil: The config for the mail toil commands.
     """
     load_test: LoadTestConfig
+    mail_toil: Optional[MailToilConfig]

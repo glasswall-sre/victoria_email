@@ -7,7 +7,8 @@ def repo_file_as_string(file_path: str) -> str:
 
 
 setup(install_requires=[
-    "victoria", "aiohttp==3.5.4", "aiorun", "cchardet", "aiodns"
+    "victoria", "aiohttp>=3.5.4", "aiorun", "cchardet", "aiodns",
+    "azure-servicebus>=0.50.1", "azure-storage-blob>=2.1.0", "sremail"
 ],
       name="victoria_email",
       version="#{VERSION}#",
@@ -18,4 +19,4 @@ setup(install_requires=[
       author_email="sgibson@glasswallsolutions.com",
       url="https://github.com/glasswall-sre/victoria_email",
       packages=find_packages("."),
-      python_requires=">=3.6")
+      python_requires=">=3.7")
