@@ -5,11 +5,32 @@ A Victoria plugin for managing the FileTrust Rebuild for Email platform.
 Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
+import logging
+from typing import List, Optional
+
 import aiorun
 import click
 from victoria.plugin import Plugin
 
-from . import load_test, schemas
+from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_mail, send_mail
+
+
+def ensure_mailtoil(cfg: schemas.EmailConfig) -> None:
+    """Logs an error and exits if mailtoil is not present in config."""
+    if cfg.mail_toil is None:
+        logging.error(
+            "You need to configure the 'mail_toil' section of your config to use this command!"
+        )
+        raise SystemExit(1)
+
+
+def ensure_loadtest(cfg: schemas.EmailConfig) -> None:
+    """Logs an error and exits if loadtest is not present in config."""
+    if cfg.load_test is None:
+        logging.error(
+            "You need to configure the 'mail_toil' section of your config to use this command!"
+        )
+        raise SystemExit(1)
 
 
 @click.group()
@@ -68,6 +89,105 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
     loop.run_until_complete(
         load_test.perform_load_test(frequency, endpoint, duration, recipient,
                                     sender, cfg.load_test))
+
+
+@root_cmd.command()
+@click.argument("cluster", nargs=1, type=str)
+@click.option("-o",
+              "--output",
+              type=str,
+              required=True,
+              help="The directory to write reconstructed mail to.")
+@click.option("-a", "--anon", type=bool, is_flag=True)
+@click.option("-i",
+              "--transaction-id",
+              multiple=True,
+              type=str,
+              help="Cherry-pick GUIDs from blob storage to reconstruct. "
+              "This bypasses dead letter scanning.")
+@click.pass_obj
+def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
+                anon: bool, transaction_id: List[str]) -> None:
+    """Reconstruct mail from blob storage.
+
+    Can also scan dead letter queues to find mail that needs to be reconstructed.
+
+    \b
+    Reconstruct mail in dead letters:
+    $ victoria email reconstruct uksprod1 -o output_dir
+
+    \b
+    Reconstruct a specific transaction ID
+    $ victoria email reconstruct useprod2 -i <guid> -o output_dir
+
+    \b
+    Reconstruct a specific transaction ID, anonymising contents
+    $ victoria email reconstruct useprod4 -i <guid> -o output_dir --anon
+    """
+    ensure_mailtoil(cfg)
+    reconstruct_mail.reconstruct(cfg.mail_toil, cluster, output,
+                                 transaction_id, anon, cfg)
+
+
+@root_cmd.command()
+@click.argument("cluster", nargs=1, type=str)
+@click.pass_obj
+def replay(cfg: schemas.EmailConfig, cluster: str) -> None:
+    """Replay mail in service bus dead letters.
+
+    \b
+    To replay mail from a cluster:
+    $ victoria email replay uksprod1
+    """
+    ensure_mailtoil(cfg)
+    replay_deadletters.replay(cfg.mail_toil, cluster, cfg)
+
+
+@root_cmd.command()
+@click.argument("cluster", nargs=1, type=str)
+@click.option("-i",
+              "--input",
+              metavar="FILE",
+              type=str,
+              required=True,
+              help="TXT file containing transaction IDs to replay.")
+@click.option("-o",
+              "--output",
+              metavar="URL",
+              type=str,
+              required=True,
+              help="The SMTP endpoint to replay mail to.")
+@click.pass_obj
+def recover(cfg: schemas.EmailConfig, cluster: str, input: str,
+            output: str) -> None:
+    """Replay mail from blob storage through SaaS.
+
+    To be used in the event of a failure causing mail to be persisted to
+    blob storage but not sent onwards from SMTP receiver - being lost into
+    the void.
+
+    \b
+    Usage example:
+    $ victoria email recover uksprod -i tx-ids.txt -o localhost:25
+    """
+    ensure_mailtoil(cfg)
+    recover_mail.recover(cfg.mail_toil, cluster, input, output, cfg)
+
+
+@root_cmd.command()
+@click.argument("manifest", nargs=1, type=str)
+def send(manifest: str) -> None:
+    """Send mail specified by manifest files.
+
+    For information about the manifest format, please see the README:
+    https://github.com/glasswall-sre/victoria_email
+
+    \b
+    Usage example:
+    $ victoria email send uksprod.yaml
+    """
+    loaded_manifest = send_mail.Manifest.load(manifest)
+    send_mail.send_manifest(loaded_manifest)
 
 
 # plugin entry point
