@@ -32,7 +32,7 @@ email:
     mail_send_function_code: <the code to access the Azure Function>
     tenant_ids: [<tenant ID(s) to attach to the email>]
     timeout: 10.0
-    load:
+    load:  # Optional for load testing
       distribution:
       - file: data/test.png
         weight: 10
