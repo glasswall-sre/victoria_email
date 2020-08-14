@@ -1,6 +1,8 @@
 import pytest
 import aiohttp
 import aiorun
+import yaml
+import victoria_email.schemas as schemas
 
 def test_request_body():
     # Arrange
@@ -10,6 +12,13 @@ def test_request_body():
     recipient = "recipient.com"
     sender = "sender.com"
     timeout = 20.0
+    ret = None
+    with open("./tests/victoria_email/test_with_mutiple_filetypes.yaml", "r") as f:
+        file_content = f.read()
+        yaml_obj = yaml.load(file_content)
+        # Act
+        email_schema = schemas.EmailConfigSchema()
+        ret = email_schema.load(yaml_obj)
     # Act
     req_body = {
         "endpoint": endpoint,
@@ -17,7 +26,9 @@ def test_request_body():
         "tenant_ids": [str(tenant_id) for tenant_id in tenant_ids],
         "recipient": recipient,
         "sender": sender,
-        "timeout": timeout
+        "timeout": timeout,
+        "load": ret.load_test.load
     }
+    print(".")
     # Assert
-    #assert 1 == 1
+    assert 1 == 1

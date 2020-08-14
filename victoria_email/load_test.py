@@ -66,7 +66,8 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         "tenant_ids": [str(tenant_id) for tenant_id in load_test_config.tenant_ids],
         "recipient": recipient,
         "sender": sender,
-        "timeout": load_test_config.timeout
+        "timeout": load_test_config.timeout,
+        "load": load_test_config.load
     }
 
     # perform the POST to run the test
