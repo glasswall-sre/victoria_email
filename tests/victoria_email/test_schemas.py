@@ -38,5 +38,16 @@ def test_make_config_no_tenants():
         with pytest.raises(marshmallow.exceptions.ValidationError):    
             email_schema = schemas.EmailConfigSchema()
             ret = email_schema.load(yaml_obj)
+
+def test_make_config_with_load_config():
+    # Arrange
+    with open("./tests/victoria_email/test_with_mutiple_filetypes.yaml", "r") as f:
+        file_content = f.read()
+        yaml_obj = yaml.load(file_content)
+        # Act
+        email_schema = schemas.EmailConfigSchema()
+        ret = email_schema.load(yaml_obj)
+        # Assert
+        assert len(ret.load_test.load.attachment_count) == 3
         
         
