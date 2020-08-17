@@ -67,7 +67,16 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         "recipient": recipient,
         "sender": sender,
         "timeout": load_test_config.timeout,
-        "load": load_test_config.load
+        "load": {
+            "distribution": [
+                {
+                    "file": str(distrib.file),
+                    "weight": int(distrib.weight)
+                }
+                for distrib in load_test_config.load.distribution
+            ],
+            "attachment_count": [ int(x) for x in load_test_config.load.attachment_count ]
+        }
     }
 
     # perform the POST to run the test

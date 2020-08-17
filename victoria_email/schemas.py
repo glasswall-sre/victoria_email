@@ -21,7 +21,7 @@ class Disitribution:
         self.weight = weight
 
 class Load:
-    def __init__(self, distribution: str, attachment_count):
+    def __init__(self, distribution: List[Dict], attachment_count: List[int]):
         self.distribution = distribution
         self.attachment_count = attachment_count
 
@@ -34,14 +34,12 @@ class DisitributionSchema(Schema):
         return Disitribution(**data)
 
 class LoadSchema(Schema):
-    distribution = fields.List(fields.Nested( DisitributionSchema))
+    distribution = fields.List(fields.Nested( DisitributionSchema ))
     attachment_count = fields.List(fields.Int())
 
     @post_load
     def make_config(self, data, **kwargs):
         return Load(**data)
-
-
 
 
 class LoadTestConfigSchema(Schema):
@@ -54,7 +52,7 @@ class LoadTestConfigSchema(Schema):
     mail_send_function_code = fields.Str(required=True, allow_none=False)
     tenant_ids = fields.List(fields.UUID(allow_none=False), required=True, allow_none=False, validate=validate.Length(min=1))
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
-    load = fields.Nested(LoadSchema ,required=False)
+    load = fields.Nested(LoadSchema, required=False)
     @post_load
     def make_config(self, data, **kwargs):
         return LoadTestConfig(**data)
@@ -69,12 +67,13 @@ class LoadTestConfig:
         mail_send_function_code: The auth code to use the Azure function backend.
         tenant_ids: The tenant ID(s) to attach to the sent tests.
         timeout: The SMTP sending timeout to use.
+        load:
     """
     mail_send_function_endpoint: str
     mail_send_function_code: str
     tenant_ids: List[UUID]
     timeout: float
-    load: Dict
+    load: Load
 
 
 class EmailConfigSchema(Schema):
