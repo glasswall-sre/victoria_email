@@ -50,4 +50,3 @@ def test_make_config_with_load_config():
         # Assert
         assert len(ret.load_test.load.attachment_count) == 3
         
-        
