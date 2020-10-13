@@ -5,13 +5,15 @@ Marshmallow schemas for the email plugin.
 Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 from uuid import UUID
 from typing import List, Dict
 
 from marshmallow import Schema, fields, post_load, validate
 
+from .core.blob_storage import CONNECTION_STR, get_blob_properties
+from .core.util import generate_random_uuids, generate_random_numbers, get_random_items
 from .core.config import MailToilConfigSchema, MailToilConfig
 
 
@@ -20,10 +22,18 @@ class Disitribution:
         self.file = file
         self.weight = weight
 
+    @classmethod
+    def get_random_disitributions(cls):
+        properties = get_blob_properties('fileattachments', CONNECTION_STR)
+        return [cls(attachment.name, attachment.size) for attachment in
+                get_random_items(properties)]
+
+
 class Load:
-    def __init__(self, distribution: List[Dict], attachment_count: List[int]):
-        self.distribution = distribution
-        self.attachment_count = attachment_count
+    def __init__(self, distribution: List[Dict] = None, attachment_count: List[int] = None):
+        self.distribution = distribution if distribution else Disitribution.get_random_disitributions()
+        self.attachment_count = attachment_count if attachment_count else generate_random_numbers()
+
 
 class DisitributionSchema(Schema):
     file = fields.Str(required=True)
@@ -33,8 +43,9 @@ class DisitributionSchema(Schema):
     def make_config(self, data, **kwargs):
         return Disitribution(**data)
 
+
 class LoadSchema(Schema):
-    distribution = fields.List(fields.Nested( DisitributionSchema ))
+    distribution = fields.List(fields.Nested(DisitributionSchema))
     attachment_count = fields.List(fields.Int())
 
     @post_load
@@ -50,9 +61,10 @@ class LoadTestConfigSchema(Schema):
                                                  relative=False,
                                                  schemes="https"))
     mail_send_function_code = fields.Str(required=True, allow_none=False)
-    tenant_ids = fields.List(fields.UUID(allow_none=False), required=True, allow_none=False, validate=validate.Length(min=1))
+    tenant_ids = fields.List(fields.UUID(allow_none=False), required=False)
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
     load = fields.Nested(LoadSchema, required=False)
+
     @post_load
     def make_config(self, data, **kwargs):
         return LoadTestConfig(**data)
@@ -71,9 +83,9 @@ class LoadTestConfig:
     """
     mail_send_function_endpoint: str
     mail_send_function_code: str
-    tenant_ids: List[UUID]
     timeout: float
-    load: Load
+    load: Load = field(default_factory=Load)
+    tenant_ids: List[UUID] = field(default_factory=generate_random_uuids)
 
 
 class EmailConfigSchema(Schema):

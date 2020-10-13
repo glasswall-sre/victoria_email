@@ -1,10 +1,11 @@
 from io import BytesIO
 import json
 import logging
+import os
 
 from azure.common import AzureMissingResourceHttpError
-from azure.storage.blob import BlobServiceClient
-import azure.storage.blob
+from azure.core.paging import ItemPaged
+from azure.storage.blob import BlobServiceClient, BlobProperties, ContainerClient
 
 # sometimes it's in different places in the blob storage container, not
 # sure what causes this or even if it's still an issue but in November-ish 2019
@@ -15,6 +16,8 @@ MIME_BLOB_NAMES = [
     "MessageInspectionQueue/Glasswall.FileTrust.Messaging.ReceivedMessage.json"
 ]
 """The name of the blob within the container that contains the MIME message."""
+
+CONNECTION_STR = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
 
 
 def connect(connection_str: str) -> BlobServiceClient:
@@ -63,3 +66,11 @@ def get_mime_message(transaction_id: str,
     logging.error(
         f"Transaction ID '{transaction_id}' not found in blob storage")
     return None
+
+
+def get_container(container_name: str, connection_str: str) -> ContainerClient:
+    return connect(connection_str).get_container_client(container_name)
+
+
+def get_blob_properties(container_name: str, connection_str: str) -> ItemPaged[BlobProperties]:
+    return get_container(container_name, connection_str).list_blobs()
