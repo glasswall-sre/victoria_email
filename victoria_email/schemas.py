@@ -17,13 +17,13 @@ from .core.util import generate_random_uuids, generate_random_numbers, get_rando
 from .core.config import MailToilConfigSchema, MailToilConfig
 
 
-class Disitribution:
+class Distribution:
     def __init__(self, file: str, weight: float):
         self.file = file
         self.weight = weight
 
     @classmethod
-    def get_random_disitributions(cls):
+    def get_random_distributions(cls):
         properties = get_blob_properties('fileattachments', CONNECTION_STR)
         return [cls(attachment.name, attachment.size) for attachment in
                 get_random_items(properties)]
@@ -31,21 +31,21 @@ class Disitribution:
 
 class Load:
     def __init__(self, distribution: List[Dict] = None, attachment_count: List[int] = None):
-        self.distribution = distribution if distribution else Disitribution.get_random_disitributions()
+        self.distribution = distribution if distribution else Distribution.get_random_distributions()
         self.attachment_count = attachment_count if attachment_count else generate_random_numbers()
 
 
-class DisitributionSchema(Schema):
+class DistributionSchema(Schema):
     file = fields.Str(required=True)
     weight = fields.Float(required=True)
 
     @post_load
     def make_config(self, data, **kwargs):
-        return Disitribution(**data)
+        return Distribution(**data)
 
 
 class LoadSchema(Schema):
-    distribution = fields.List(fields.Nested(DisitributionSchema))
+    distribution = fields.List(fields.Nested(DistributionSchema))
     attachment_count = fields.List(fields.Int())
 
     @post_load
