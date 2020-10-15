@@ -5,9 +5,9 @@ load_test:
   timeout: 10.0
   load:
     distribution:
-    - file: data/test.png
+    - file: data/png/4mb.png
       weight: 10
-    - file: data/test.bmp
+    - file: data/png/png_Result_Clean_0.png
       weight: 90
     attachment_count:
     - 25

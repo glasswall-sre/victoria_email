@@ -6,11 +6,13 @@ Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
 import logging
-from typing import List, Optional
+from typing import List
 
 import aiorun
 import click
 from victoria.plugin import Plugin
+
+from victoria_email.core.util import generate_random_email
 
 from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_mail, send_mail
 
@@ -60,13 +62,14 @@ def root_cmd() -> None:
 @click.option("-r",
               "--recipient",
               type=str,
-              required=True,
-              help="The email recipient address.")
+              default=generate_random_email(),
+              help="The email recipient address. Default: A random email recipient will be generated")
 @click.option("-s",
               "--sender",
               type=str,
               required=True,
-              help="The email sender address.")
+              default=generate_random_email(),
+              help="The email sender address. Default: A random email sender will be generated")
 @click.pass_obj
 def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
              duration: int, recipient: str, sender: str) -> None:
