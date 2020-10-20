@@ -36,6 +36,7 @@ def test_request_body():
     # Assert
     assert 1 == 1
 
+
 def test_more():
     # Arrange
     endpoint = "unittest.endpoint.com"
@@ -48,28 +49,27 @@ def test_more():
         file_content = f.read()
         yaml_obj = yaml.load(file_content)
         # Act
-        email_schema = schemas.LoadTestConfigSchema()
-        load_test_config = email_schema.load(yaml_obj)
+        load_test_config_schema = schemas.LoadTestConfigSchema()
+        load_test_config = load_test_config_schema.load(yaml_obj['load_test'])
         # Act
         req_body = {
-        "endpoint": endpoint,
-        "port": int(port),
-        "tenant_ids": [str(tenant_id) for tenant_id in load_test_config.tenant_ids],
-        "recipient": recipient,
-        "sender": sender,
-        "timeout": load_test_config.timeout,
-        "load": {
-            "distribution": [
-                {
-                    "file": str(distrib.file),
-                    "weight": int(distrib.weight)
-                }
-                for distrib in load_test_config.load.distribution
-            ],
-            "attachment_count": [ int(x) for x in load_test_config.load.attachment_count ]
+            "endpoint": endpoint,
+            "port": int(port),
+            "tenant_ids": [str(tenant_id) for tenant_id in load_test_config.tenant_ids],
+            "recipient": recipient,
+            "sender": sender,
+            "timeout": load_test_config.timeout,
+            "load": {
+                "distribution": [
+                    {
+                        "file": str(distrib.file),
+                        "weight": int(distrib.weight)
+                    }
+                    for distrib in load_test_config.load.distribution
+                ],
+                "attachment_count": [int(x) for x in load_test_config.load.attachment_count]
+            }
         }
-    }
- 
 
     # Assert
     assert 1 == 1
