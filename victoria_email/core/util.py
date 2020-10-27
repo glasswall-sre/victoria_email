@@ -18,7 +18,7 @@ def file_name(f: str) -> str:
     return splitext(f)[0]
 
 
-def get_random_items(items: Iterable, count: int = 10) -> list:
+def get_random_items(items: Iterable, count: int) -> list:
     iterator = iter(items)
     try:
         items = [iterator.next() for _ in range(count)]
