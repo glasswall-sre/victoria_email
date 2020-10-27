@@ -13,7 +13,7 @@ from typing import List, Dict
 from marshmallow import Schema, fields, post_load, validate
 
 from .core.blob_storage import CONNECTION_STR, get_blob_properties
-from .core.util import generate_random_uuids, generate_random_numbers, get_random_items
+from .core.util import get_random_items
 from .core.config import MailToilConfigSchema, MailToilConfig
 
 
@@ -31,8 +31,8 @@ class Distribution:
 
 class Load:
     def __init__(self, distribution: List[Dict] = None, attachment_count: List[int] = None):
-        self.distribution = distribution if distribution else Distribution.get_random_distributions()
-        self.attachment_count = attachment_count if attachment_count else generate_random_numbers()
+        self.distribution = distribution
+        self.attachment_count = attachment_count
 
 
 class DistributionSchema(Schema):
@@ -85,7 +85,7 @@ class LoadTestConfig:
     mail_send_function_code: str
     timeout: float
     load: Load = field(default_factory=Load)
-    tenant_ids: List[UUID] = field(default_factory=generate_random_uuids)
+    tenant_ids: List[UUID] = field(default_factory=list)
 
 
 class EmailConfigSchema(Schema):
