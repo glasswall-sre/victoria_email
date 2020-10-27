@@ -133,6 +133,11 @@ Example of sending using a different port than port 25:
 $ victoria email loadtest -e smtp.example.com:465 -s test@example.com -r test@example.com
 ```
 
+Example of sending messages with random data and (recipient, sender):
+```
+$ victoria email loadtest -e smtp.example.com
+```
+
 #### Sending email
 The `send` command can be used to send single emails (based on a YAML manifest
 format) to an SMTP endpoint.
