@@ -18,9 +18,9 @@ from datetime import datetime
 from functools import reduce
 
 import aiohttp
-import aiorun
 
-from .schemas import LoadTestConfig
+from .core.util import generate_random_uuids, generate_random_numbers
+from .schemas import LoadTestConfig, Distribution
 
 
 @dataclass
@@ -60,31 +60,35 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         split_endpoint) > 1 else "25"  # default port 25
 
     # build the request body with the data provided
+    distributions = load_test_config.load.distribution if None else Distribution.get_random_distributions()
+    tenant_ids = load_test_config.tenant_ids if len(load_test_config.tenant_ids) > 0 else generate_random_uuids()
+    attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
+
     req_body = {
         "endpoint": endpoint,
         "port": int(port),
-        "tenant_ids": [str(tenant_id) for tenant_id in load_test_config.tenant_ids],
+        "tenant_ids": [str(tenant_id) for tenant_id in tenant_ids],
         "recipient": recipient,
         "sender": sender,
         "timeout": load_test_config.timeout,
         "load": {
             "distribution": [
                 {
-                    "file": str(distrib.file),
-                    "weight": int(distrib.weight)
+                    "file": str(distribution.file),
+                    "weight": int(distribution.weight)
                 }
-                for distrib in load_test_config.load.distribution
+                for distribution in distributions
             ],
-            "attachment_count": [ int(x) for x in load_test_config.load.attachment_count ]
+            "attachment_count": [int(x) for x in attachment_count]
         }
     }
 
     # perform the POST to run the test
     async with session.post(
-        load_test_config.mail_send_function_endpoint,
-        json=req_body,
-        params={"code": load_test_config.mail_send_function_code},
-        timeout=aiohttp.ClientTimeout(total=None)) as resp:
+            load_test_config.mail_send_function_endpoint,
+            json=req_body,
+            params={"code": load_test_config.mail_send_function_code},
+            timeout=aiohttp.ClientTimeout(total=None)) as resp:
         time_now = datetime.now()
         return TestResult(resp.status, await resp.text(), time_now)
 
