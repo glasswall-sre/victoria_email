@@ -133,6 +133,11 @@ Example of sending using a different port than port 25:
 $ victoria email loadtest -e smtp.example.com:465 -s test@example.com -r test@example.com
 ```
 
+Example of sending messages with random data and (recipient, sender):
+```
+$ victoria email loadtest -e smtp.example.com
+```
+
 #### Sending email
 The `send` command can be used to send single emails (based on a YAML manifest
 format) to an SMTP endpoint.
@@ -246,5 +251,7 @@ config.
 ### Quick start
 1. Clone this repo.
 2. In the root of the repo, run `pipenv sync --dev`.
-3. You're good to go. You can run the plugin during development with 
+3. You need to export your azure connection string for blob storage: 
+   `export AZURE_STORAGE_CONNECTION_STRING="YOUR AZURE CONNECTION STRING"`
+4. You're good to go. You can run the plugin during development with 
    `pipenv run victoria email`.
