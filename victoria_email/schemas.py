@@ -26,7 +26,7 @@ class Distribution:
     def get_random_distributions(cls):
         properties = get_blob_properties('fileattachments', CONNECTION_STR)
         return [cls(attachment.name, attachment.size) for attachment in
-                get_random_items(properties, count=1)]
+                get_random_items(properties, count=100)]
 
 
 class Load:
