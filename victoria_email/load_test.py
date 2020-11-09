@@ -13,6 +13,7 @@ Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
 import asyncio
+import random
 from dataclasses import dataclass
 from datetime import datetime
 from functools import reduce
@@ -60,14 +61,11 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         split_endpoint) > 1 else "25"  # default port 25
 
     # build the request body with the data provided
-    distributions = load_test_config.load.distribution if None else Distribution.get_random_distributions()
-    tenant_ids = load_test_config.tenant_ids if len(load_test_config.tenant_ids) > 0 else generate_random_uuids()
-    attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
 
     req_body = {
         "endpoint": endpoint,
         "port": int(port),
-        "tenant_ids": [str(tenant_id) for tenant_id in tenant_ids],
+        "tenant_ids": [str(tenant_id) for tenant_id in load_test_config.tenant_ids],
         "recipient": recipient,
         "sender": sender,
         "timeout": load_test_config.timeout,
@@ -77,9 +75,9 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
                     "file": str(distribution.file),
                     "weight": int(distribution.weight)
                 }
-                for distribution in distributions
+                for distribution in load_test_config.load.distribution
             ],
-            "attachment_count": [int(x) for x in attachment_count]
+            "attachment_count": [int(x) for x in load_test_config.load.attachment_count]
         }
     }
 
@@ -113,10 +111,17 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         number_of_intervals = int(frequency * duration)
         intervals_processed = 0
         tasks = []
+        distributions = Distribution.get_random_distributions()
+
+        load_test_config.tenant_ids = load_test_config.tenant_ids if len(
+            load_test_config.tenant_ids) > 0 else generate_random_uuids()
+        load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
 
         # perform the tests spread out along the time period
         while intervals_processed < number_of_intervals:
             # create a task to run a single test asynchronously
+            load_test_config.load.distribution = [random.choice(distributions)]
+
             tasks.append(
                 asyncio.create_task(
                     run_single_test(session, endpoint, recipient, sender,
