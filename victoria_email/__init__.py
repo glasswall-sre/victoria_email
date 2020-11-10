@@ -12,7 +12,7 @@ import aiorun
 import click
 from victoria.plugin import Plugin
 
-from victoria_email.core.util import generate_random_email
+from victoria_email.core.util import generate_random_email, generate_random_uuids
 
 from . import load_test, schemas, reconstruct_mail, replay_deadletters, recover_mail, send_mail
 
@@ -70,9 +70,16 @@ def root_cmd() -> None:
               required=True,
               default=generate_random_email(),
               help="The email sender address. Default: A random email sender will be generated")
+@click.option("-i",
+              "--tenant_id",
+              type=str,
+              multiple=True,
+              required=False,
+              default=generate_random_uuids(),
+              help="Tenant id. Default: A random tenant id will be generated")
 @click.pass_obj
 def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
-             duration: int, recipient: str, sender: str) -> None:
+             duration: int, recipient: str, sender: str, tenant_id: int) -> None:
     """Perform a load test on a cluster.
     
     \b
@@ -91,7 +98,7 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
     loop.set_exception_handler(lambda loop, context: "Error")
     loop.run_until_complete(
         load_test.perform_load_test(frequency, endpoint, duration, recipient,
-                                    sender, cfg.load_test))
+                                    sender, tenant_id, cfg.load_test))
 
 
 @root_cmd.command()
