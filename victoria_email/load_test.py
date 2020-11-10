@@ -20,7 +20,7 @@ from functools import reduce
 
 import aiohttp
 
-from .core.util import generate_random_uuids, generate_random_numbers
+from .core.util import generate_random_numbers
 from .schemas import LoadTestConfig, Distribution
 
 
@@ -92,7 +92,7 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
 
 
 async def perform_load_test(frequency: int, endpoint: str, duration: int,
-                            recipient: str, sender: str,
+                            recipient: str, sender: str, tenant_id: list,
                             load_test_config: LoadTestConfig) -> None:
     """Asynchronously run a load test with a given frequency and duration.
 
@@ -102,6 +102,7 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         duration: How long in seconds to run the test.
         recipient: The email address to send to.
         sender: The email address to send with.
+        tenant_id: Tenant id.
         load_test_config: The config for the load tester.
     """
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(
@@ -113,8 +114,7 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         tasks = []
         distributions = Distribution.get_random_distributions()
 
-        load_test_config.tenant_ids = load_test_config.tenant_ids if len(
-            load_test_config.tenant_ids) > 0 else generate_random_uuids()
+        load_test_config.tenant_ids = load_test_config.tenant_ids if len(load_test_config.tenant_ids) > 0 else tenant_id
         load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
 
         # perform the tests spread out along the time period
