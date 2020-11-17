@@ -14,9 +14,11 @@ Author:
 """
 import asyncio
 import random
+
 from dataclasses import dataclass
 from datetime import datetime
 from functools import reduce
+from itertools import cycle
 
 import aiohttp
 
@@ -39,7 +41,7 @@ class TestResult:
 
 
 async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
-                          recipient: str, sender: str,
+                          recipient: str, sender: str, function_endpoint: str,
                           load_test_config: LoadTestConfig) -> TestResult:
     """Asynchronously run a single test by async invoking the backend Azure
     function. Return a TestResult object containing the results of the test.
@@ -49,6 +51,7 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         endpoint: The SMTP endpoint to send mail to.
         recipient: The email address to send to.
         sender: The email address to send from.
+        function_endpoint: Function endpoint
         load_test_config: The config of the load tester.
 
     Returns:
@@ -83,7 +86,7 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
 
     # perform the POST to run the test
     async with session.post(
-            load_test_config.mail_send_function_endpoint,
+            function_endpoint,
             json=req_body,
             params={"code": load_test_config.mail_send_function_code},
             timeout=aiohttp.ClientTimeout(total=None)) as resp:
@@ -119,13 +122,14 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
 
         # perform the tests spread out along the time period
+        functions_cycle = cycle(load_test_config.mail_send_function_endpoint)
         while intervals_processed < number_of_intervals:
             # create a task to run a single test asynchronously
             load_test_config.load.distribution = [random.choice(distributions)]
-
+            function_endpoint = next(functions_cycle)
             tasks.append(
                 asyncio.create_task(
-                    run_single_test(session, endpoint, recipient, sender,
+                    run_single_test(session, endpoint, recipient, sender, function_endpoint,
                                     load_test_config)))
             intervals_processed += 1
             percent_done = (intervals_processed / number_of_intervals) * 100
