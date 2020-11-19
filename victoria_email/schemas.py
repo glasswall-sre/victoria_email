@@ -55,11 +55,12 @@ class LoadSchema(Schema):
 
 class LoadTestConfigSchema(Schema):
     """Marshmallow schema for the load testing config section."""
-    mail_send_function_endpoint = fields.Str(required=True,
-                                             allow_none=False,
-                                             validate=validate.URL(
-                                                 relative=False,
-                                                 schemes="https"))
+    mail_send_function_endpoint = fields.List(fields.Str(allow_none=False,
+                                                         validate=validate.URL(
+                                                             relative=False,
+                                                             schemes="https")),
+                                              required=True,
+                                              )
     mail_send_function_code = fields.Str(required=True, allow_none=False)
     tenant_ids = fields.List(fields.UUID(allow_none=False), required=False)
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
