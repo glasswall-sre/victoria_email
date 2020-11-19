@@ -82,7 +82,7 @@ class LoadTestConfig:
         timeout: The SMTP sending timeout to use.
         load:
     """
-    mail_send_function_endpoint: str
+    mail_send_function_endpoint: list
     mail_send_function_code: str
     timeout: float
     load: Load = field(default_factory=Load)
