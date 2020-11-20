@@ -118,7 +118,6 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
             total=None)) as session:
         # between each test we wait for 1/frequency seconds
         wait_interval = 1.0 / frequency
-        tasks = []
         distributions = Distribution.get_random_distributions()
         if not tenant_ids:
             tenant_ids = load_test_config.tenant_ids if len(
@@ -129,15 +128,16 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         # perform the tests spread out along the time period
         total_tests = int(frequency * duration)
         number_of_intervals = total_tests
-
         errors = True
         retry_count = 0
         max_retries = len(load_test_config.mail_send_function_endpoint)
+        successful_tests = 0
+        unresolvable_exceptions = []
         while errors and retry_count < max_retries:
+            tasks = []
             if load_test_config.mail_send_function_endpoint:
                 functions_cycle = cycle(load_test_config.mail_send_function_endpoint)
                 intervals_processed = 0
-
                 while intervals_processed < number_of_intervals:
                     # create a task to run a single test asynchronously
                     load_test_config.load.distribution = [random.choice(distributions)]
@@ -175,8 +175,9 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
             num_successful = reduce(
                 lambda cur, result: cur + (1 if result.status == 200 else 0),
                 test_results, 0)
+            successful_tests += num_successful
             print(
-                f"{num_successful} / {total_tests} tests were successfully sent"
+                f"{num_successful} / {number_of_intervals} tests were successfully sent"
             )
 
             # if there were any non-successful tests, print the reasons
@@ -185,15 +186,19 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                 failed_sends = [
                     result for result in test_results if result.status != 200
                 ]
-                number_of_intervals = number_of_intervals - len(
+                number_of_intervals = len(
                     [test for test in failed_sends if test.status in list(range(400, 500)) + [504]])
+
+                unresolvable_exceptions += [test for test in failed_sends if
+                                            test.status not in list(range(400, 500)) + [504]]
                 removed_endpoints = []
 
                 for failed_result in failed_sends:
                     print(
                         f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}"
                     )
-                    if failed_result.status in list(range(400, 500)) + [504] and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
+                    if failed_result.status in list(range(400, 500)) + [
+                        504] and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
                         load_test_config.mail_send_function_endpoint.remove(failed_result.function_endpoint)
                         removed_endpoints.append(failed_result.function_endpoint)
 
@@ -201,8 +206,22 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                 for function_endpoint in removed_endpoints:
                     print(f'{function_endpoint} - failed to send tests')
 
+                if not number_of_intervals:
+                    break
+
             else:
                 errors = False
+
+        print(
+            f"total {successful_tests} / {total_tests} tests were successfully sent"
+        )
+
+        if len(unresolvable_exceptions):
+            print("\nUnresolvable failures:")
+            for failed_result in unresolvable_exceptions:
+                print(
+                    f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}"
+                )
 
         if not retry_count < max_retries:
             print('\nMax retries exceeded')
