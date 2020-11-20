@@ -87,13 +87,17 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
     }
 
     # perform the POST to run the test
-    async with session.post(
-            function_endpoint,
-            json=req_body,
-            params={"code": load_test_config.mail_send_function_code},
-            timeout=aiohttp.ClientTimeout(total=None)) as resp:
+    try:
+        async with session.post(
+                function_endpoint,
+                json=req_body,
+                params={"code": load_test_config.mail_send_function_code},
+                timeout=aiohttp.ClientTimeout(total=None)) as resp:
+            time_now = datetime.now()
+            return TestResult(resp.status, await resp.text(), time_now, function_endpoint)
+    except aiohttp.ClientConnectorError as error:
         time_now = datetime.now()
-        return TestResult(resp.status, await resp.text(), time_now, function_endpoint)
+        return TestResult(504, str(error), time_now, function_endpoint)
 
 
 async def perform_load_test(frequency: int, endpoint: str, duration: int,
@@ -117,7 +121,8 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         tasks = []
         distributions = Distribution.get_random_distributions()
         if not tenant_ids:
-            tenant_ids = load_test_config.tenant_ids if len(load_test_config.tenant_ids) > 0 else generate_random_uuids()
+            tenant_ids = load_test_config.tenant_ids if len(
+                load_test_config.tenant_ids) > 0 else generate_random_uuids()
         load_test_config.tenant_ids = tenant_ids
         load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
 
@@ -180,14 +185,15 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                 failed_sends = [
                     result for result in test_results if result.status != 200
                 ]
-                number_of_intervals = number_of_intervals - len(failed_sends)
+                number_of_intervals = number_of_intervals - len(
+                    [test for test in failed_sends if test.status in list(range(400, 500)) + [504]])
                 removed_endpoints = []
 
                 for failed_result in failed_sends:
                     print(
                         f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}"
                     )
-                    if failed_result.status in range(400, 500) and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
+                    if failed_result.status in list(range(400, 500)) + [504] and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
                         load_test_config.mail_send_function_endpoint.remove(failed_result.function_endpoint)
                         removed_endpoints.append(failed_result.function_endpoint)
 
