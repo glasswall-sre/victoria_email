@@ -21,6 +21,7 @@ from functools import reduce
 from itertools import cycle
 
 import aiohttp
+import roundrobin
 
 from .core.util import generate_random_numbers, generate_random_uuids
 from .schemas import LoadTestConfig, Distribution
@@ -118,74 +119,75 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
             total=None)) as session:
         # between each test we wait for 1/frequency seconds
         wait_interval = 1.0 / frequency
-        distributions = Distribution.get_random_distributions()
         if not tenant_ids:
             tenant_ids = load_test_config.tenant_ids if len(
                 load_test_config.tenant_ids) > 0 else generate_random_uuids()
-        load_test_config.tenant_ids = tenant_ids
+        distributions = Distribution.get_random_distributions()
         load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
+        load_test_config.tenant_ids = tenant_ids
 
         # perform the tests spread out along the time period
+
+        successful_tests = 0
+        unresolvable_exceptions = []
         total_tests = int(frequency * duration)
         number_of_intervals = total_tests
         errors = True
         retry_count = 0
         max_retries = len(load_test_config.mail_send_function_endpoint)
-        successful_tests = 0
-        unresolvable_exceptions = []
         while errors and retry_count < max_retries:
             tasks = []
             if load_test_config.mail_send_function_endpoint:
-                functions_cycle = cycle(load_test_config.mail_send_function_endpoint)
+                # functions_cycle = cycle(load_test_config.mail_send_function_endpoint)
                 intervals_processed = 0
+                functions_cycle = roundrobin.basic(load_test_config.mail_send_function_endpoint)
                 while intervals_processed < number_of_intervals:
-                    # create a task to run a single test asynchronously
+                    # Create a task to run a single test asynchronously
+                    function_endpoint = functions_cycle()
                     load_test_config.load.distribution = [random.choice(distributions)]
-                    function_endpoint = next(functions_cycle)
                     tasks.append(
                         asyncio.create_task(
-                            run_single_test(session, endpoint, recipient, sender, function_endpoint,
-                                            load_test_config)))
+                            run_single_test(
+                                session,
+                                endpoint,
+                                recipient,
+                                sender,
+                                function_endpoint,
+                                load_test_config
+                            )
+                        )
+                    )
+
+                    print(function_endpoint)
                     intervals_processed += 1
                     percent_done = (intervals_processed / number_of_intervals) * 100
-                    print(
-                        f"{intervals_processed} / {number_of_intervals}\t\t\t\t{percent_done:02f}%"
-                    )
+                    print(f"{intervals_processed} / {number_of_intervals}\t\t\t\t{percent_done:02f}%")
                     await asyncio.sleep(wait_interval)
 
             else:
-                print('\n\nFunction endpoints are not available')
+                print("\n\nFunction endpoints aren't available")
 
             print("\n")
-
-            # wait for the tasks to complete
-            done, _ = await asyncio.wait(tasks,
-                                         return_when=asyncio.FIRST_EXCEPTION)
+            # Wait for the tasks to complete
+            done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
             test_results = []
             for task in done:
-                # if there were any exceptions, raise the first one
-                err = task.exception()
-                if err is not None:
-                    raise err
-
-                # otherwise add the result to the list
+                # If there were any exceptions, raise the first one
+                error = task.exception()
+                if error is not None:
+                    raise error
+                # Otherwise add the result to the list
                 test_results.append(task.result())
 
-            # compile the amount of successful tests to show the user
-            num_successful = reduce(
-                lambda cur, result: cur + (1 if result.status == 200 else 0),
-                test_results, 0)
+            # Compile the amount of successful tests to show the user
+            num_successful = reduce(lambda cur, result: cur + (1 if result.status == 200 else 0), test_results, 0)
             successful_tests += num_successful
-            print(
-                f"{num_successful} / {number_of_intervals} tests were successfully sent"
-            )
+            print(f"{num_successful} / {number_of_intervals} tests were successfully sent")
 
-            # if there were any non-successful tests, print the reasons
+            # If there were any non-successful tests, print the reasons
             if num_successful < number_of_intervals:
                 print("\nReasons for failures:")
-                failed_sends = [
-                    result for result in test_results if result.status != 200
-                ]
+                failed_sends = [result for result in test_results if result.status != 200]
                 number_of_intervals = len(
                     [test for test in failed_sends if test.status in list(range(400, 500)) + [504]])
 
@@ -195,33 +197,26 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
 
                 for failed_result in failed_sends:
                     print(
-                        f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}"
-                    )
-                    if failed_result.status in list(range(400, 500)) + [
-                        504] and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
+                        f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
+                    errors_range = list(range(400, 500)) + [504]
+                    if failed_result.status in errors_range and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
                         load_test_config.mail_send_function_endpoint.remove(failed_result.function_endpoint)
                         removed_endpoints.append(failed_result.function_endpoint)
-
                 print("\n")
                 for function_endpoint in removed_endpoints:
-                    print(f'{function_endpoint} - failed to send tests')
-
+                    print(f'{function_endpoint} - Failed to send tests')
                 if not number_of_intervals:
                     break
-
             else:
                 errors = False
 
-        print(
-            f"total {successful_tests} / {total_tests} tests were successfully sent"
-        )
+        print(f"total {successful_tests} / {total_tests} tests were successfully sent")
 
         if len(unresolvable_exceptions):
             print("\nUnresolvable failures:")
+
             for failed_result in unresolvable_exceptions:
-                print(
-                    f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}"
-                )
+                print(f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
 
         if not retry_count < max_retries:
             print('\nMax retries exceeded')

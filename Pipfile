@@ -16,4 +16,5 @@ click = "*"
 victoria-email = {editable = true, path = "."}
 azure-servicebus = ">=0.50.1"
 azure-storage-blob = ">=2.1.0"
+roundrobin = "*"
 sremail = "*"
