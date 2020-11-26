@@ -1,4 +1,4 @@
 load_test:
-  mail_send_function_endpoint: https://unittest-going-postal.azurewebsites.net/api/send
+  mail_send_function_endpoints: [https://unittest-going-postal.azurewebsites.net/api/send]
   mail_send_function_code: unittest
   timeout: 10.0

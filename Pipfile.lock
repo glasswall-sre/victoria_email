@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4e72654ff91bdbb7b07fcff33378f808e69de937f38d27f860c79e9190016803"
+            "sha256": "98d257206fe2cd6496f2c29b1177766ffacf843bab293d2314a721bed5b5590a"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -14,6 +14,13 @@
         ]
     },
     "default": {
+        "adal": {
+            "hashes": [
+                "sha256:7492aff8f0ba7dd4e1c477303295c645141540fff34c3ca6de0a0b0e6c1c122a",
+                "sha256:8003ba03ef04170195b3eddda8a5ab43649ef2c5f0287023d515affb1ccfcfc3"
+            ],
+            "version": "==1.2.5"
+        },
         "aiodns": {
             "hashes": [
                 "sha256:815fdef4607474295d68da46978a54481dd1e7be153c7d60f9e72773cd38d77d",
@@ -154,11 +161,11 @@
         },
         "azure-servicebus": {
             "hashes": [
-                "sha256:059973307fc69e14292f9e6d7c13913cb898c00ae48debdcd238e573e84843e4",
-                "sha256:875527251c1fed99fcb90597c6abb7daa4bc0ed88e080b4c36f897b704668450"
+                "sha256:849f6d57c74bd468c792ca69528611b782e7c4e4012688b5b63853fac1462c99",
+                "sha256:fb09141449de35542c9139f619d6c1edf5adfd08d8736c5f8222782b60d11445"
             ],
             "index": "pypi",
-            "version": "==7.0.0"
+            "version": "==0.50.1"
         },
         "azure-storage-blob": {
             "hashes": [
@@ -340,6 +347,13 @@
             ],
             "version": "==0.6.19"
         },
+        "msrestazure": {
+            "hashes": [
+                "sha256:3de50f56147ef529b31e099a982496690468ecef33f0544cb0fa0cfe1e1de5b9",
+                "sha256:a06f0dabc9a6f5efe3b6add4bd8fb623aeadacf816b7a35b0f89107e0544d189"
+            ],
+            "version": "==0.6.4"
+        },
         "multidict": {
             "hashes": [
                 "sha256:060d68ae3e674c913ec41a464916f12c4d7ff17a3a9ebbf37ba7f2c681c2b33e",
@@ -450,6 +464,14 @@
                 "sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96"
             ],
             "version": "==1.7.1"
+        },
+        "python-dateutil": {
+            "hashes": [
+                "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c",
+                "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"
+            ],
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==2.8.1"
         },
         "pyyaml": {
             "hashes": [

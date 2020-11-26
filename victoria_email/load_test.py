@@ -134,13 +134,13 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         number_of_intervals = total_tests
         errors = True
         retry_count = 0
-        max_retries = len(load_test_config.mail_send_function_endpoint)
+        max_retries = len(load_test_config.mail_send_function_endpoints)
         while errors and retry_count < max_retries:
             tasks = []
-            if load_test_config.mail_send_function_endpoint:
-                # functions_cycle = cycle(load_test_config.mail_send_function_endpoint)
+            if load_test_config.mail_send_function_endpoints:
+                # functions_cycle = cycle(load_test_config.mail_send_function_endpoints)
                 intervals_processed = 0
-                functions_cycle = roundrobin.basic(load_test_config.mail_send_function_endpoint)
+                functions_cycle = roundrobin.basic(load_test_config.mail_send_function_endpoints)
                 while intervals_processed < number_of_intervals:
                     # Create a task to run a single test asynchronously
                     function_endpoint = functions_cycle()
@@ -199,8 +199,8 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                     print(
                         f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
                     errors_range = list(range(400, 500)) + [504]
-                    if failed_result.status in errors_range and failed_result.function_endpoint in load_test_config.mail_send_function_endpoint:
-                        load_test_config.mail_send_function_endpoint.remove(failed_result.function_endpoint)
+                    if failed_result.status in errors_range and failed_result.function_endpoint in load_test_config.mail_send_function_endpoints:
+                        load_test_config.mail_send_function_endpoints.remove(failed_result.function_endpoint)
                         removed_endpoints.append(failed_result.function_endpoint)
                 print("\n")
                 for function_endpoint in removed_endpoints:

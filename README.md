@@ -28,7 +28,7 @@ A full config example is:
 ```yaml
 email:
   load_test:
-    mail_send_function_endpoint: https://sls-weur-dev-going-postal.azurewebsites.net/api/send
+    mail_send_function_endpoints: [https://sls-weur-dev-going-postal.azurewebsites.net/api/send, ...]
     mail_send_function_code: <the code to access the Azure Function>
     tenant_ids: [<tenant ID(s) to attach to the email>]
     timeout: 10.0
@@ -115,6 +115,8 @@ Running with just the required arguments will send a single test.
 It also accepts the following **optional** arguments:
 - `-n`, `--frequency`: The number of tests to send per second. Defaults to 1.
 - `-t`, `--duration`: The number of seconds to run the test for. Defaults to 1.
+- `-i`, `--tenant_ids`: Custom tenant id. Can be used multiple times. Defaults to random.
+
 
 All of this information can be found by running `victoria email loadtest -h`.
 

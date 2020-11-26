@@ -55,7 +55,7 @@ class LoadSchema(Schema):
 
 class LoadTestConfigSchema(Schema):
     """Marshmallow schema for the load testing config section."""
-    mail_send_function_endpoint = fields.List(fields.Str(allow_none=False,
+    mail_send_function_endpoints = fields.List(fields.Str(allow_none=False,
                                                          validate=validate.URL(
                                                              relative=False,
                                                              schemes="https")),
@@ -76,13 +76,13 @@ class LoadTestConfig:
     """The config of the load tester.
 
     Attributes:
-        mail_send_function_endpoint: The HTTP endpoint of the going-postal backend.
+        mail_send_function_endpoints: The HTTP endpoints of the going-postal backend.
         mail_send_function_code: The auth code to use the Azure function backend.
         tenant_ids: The tenant ID(s) to attach to the sent tests.
         timeout: The SMTP sending timeout to use.
         load:
     """
-    mail_send_function_endpoint: list
+    mail_send_function_endpoints: list
     mail_send_function_code: str
     timeout: float
     load: Load = field(default_factory=Load)
