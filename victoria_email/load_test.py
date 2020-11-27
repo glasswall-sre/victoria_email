@@ -169,8 +169,12 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
 
             print("\n")
             # Wait for the tasks to complete
+            if not tasks:
+                errors = False
+                continue
             done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
             test_results = []
+
             for task in done:
                 # If there were any exceptions, raise the first one
                 error = task.exception()
