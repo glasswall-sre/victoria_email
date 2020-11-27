@@ -100,6 +100,9 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         time_now = datetime.now()
         return TestResult(504, str(error), time_now, function_endpoint)
 
+    except Exception as error:
+        return TestResult(0, str(error), time_now, function_endpoint)
+
 
 async def perform_load_test(frequency: int, endpoint: str, duration: int,
                             recipient: str, sender: str, tenant_ids: list,
@@ -158,7 +161,6 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                         )
                     )
 
-                    print(function_endpoint)
                     intervals_processed += 1
                     percent_done = (intervals_processed / number_of_intervals) * 100
                     print(f"{intervals_processed} / {number_of_intervals}\t\t\t\t{percent_done:02f}%")
@@ -190,7 +192,8 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
 
             # If there were any non-successful tests, print the reasons
             if num_successful < number_of_intervals:
-                print("\nReasons for failures:")
+                # FOR DEBUG
+                # print("\nReasons for failures:")
                 failed_sends = [result for result in test_results if result.status != 200]
                 number_of_intervals = len(
                     [test for test in failed_sends if test.status in list(range(400, 500)) + [504]])
@@ -200,8 +203,13 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                 removed_endpoints = []
 
                 for failed_result in failed_sends:
-                    print(
-                        f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
+                    # FOR DEBUG
+                    # print(
+                    #     f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
+                    # print(
+                    #     f"\t{failed_result.time.isoformat()} - {failed_result.status} status ")
+                    # if not failed_result.message:
+                    #     print(failed_result)
                     errors_range = list(range(400, 500)) + [504]
                     if failed_result.status in errors_range and failed_result.function_endpoint in load_test_config.mail_send_function_endpoints:
                         load_test_config.mail_send_function_endpoints.remove(failed_result.function_endpoint)
@@ -216,11 +224,12 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
 
         print(f"total {successful_tests} / {total_tests} tests were successfully sent")
 
-        if len(unresolvable_exceptions):
-            print("\nUnresolvable failures:")
-
-            for failed_result in unresolvable_exceptions:
-                print(f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
+        # FOR DEBUG
+        # if len(unresolvable_exceptions):
+        #     print("\nUnresolvable failures:")
+        #
+        #     for failed_result in unresolvable_exceptions:
+        #         print(f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
 
         if not retry_count < max_retries:
             print('\nMax retries exceeded')
