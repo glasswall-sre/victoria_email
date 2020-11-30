@@ -28,8 +28,12 @@ A full config example is:
 ```yaml
 email:
   load_test:
-    mail_send_function_endpoints: [https://sls-weur-dev-going-postal.azurewebsites.net/api/send, ...]
-    mail_send_function_code: <the code to access the Azure Function>
+    mail_send_function_endpoints:
+      - function: "https://sls-weur-dev-going-postal.azurewebsites.net/api/send",
+        mail_send_function_code: <the code to access the Azure Function>
+      - function: "https://sls-seur-dev-going-postal.azurewebsites.net/api/send",
+        mail_send_function_code: <the code to access the Azure Function>
+
     tenant_ids: [<tenant ID(s) to attach to the email>]
     timeout: 10.0
     load:  # Optional for load testing
