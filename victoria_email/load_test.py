@@ -24,7 +24,7 @@ import aiohttp
 import roundrobin
 
 from .core.util import generate_random_numbers, generate_random_uuids
-from .schemas import LoadTestConfig, Distribution
+from .schemas import LoadTestConfig, Distribution, Function
 
 
 @dataclass
@@ -35,16 +35,16 @@ class TestResult:
         status (int): The HTTP status code returned from the Azure function.
         message (str): The message returned from the Azure function.
         time (datetime): The time this test result was created.
-        function_endpoint (str): function endpoint used
+        function_endpoint (Function): function endpoint used
     """
     status: int
     message: str
     time: datetime
-    function_endpoint: str
+    function_endpoint: Function
 
 
 async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
-                          recipient: str, sender: str, function_endpoint: str,
+                          recipient: str, sender: str, function_endpoint: Function,
                           load_test_config: LoadTestConfig) -> TestResult:
     """Asynchronously run a single test by async invoking the backend Azure
     function. Return a TestResult object containing the results of the test.
@@ -54,7 +54,7 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
         endpoint: The SMTP endpoint to send mail to.
         recipient: The email address to send to.
         sender: The email address to send from.
-        function_endpoint: Function endpoint
+        function_endpoint: Function endpoint and function code
         load_test_config: The config of the load tester.
 
     Returns:
@@ -90,9 +90,9 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
     # perform the POST to run the test
     try:
         async with session.post(
-                function_endpoint,
+                function_endpoint.function,
                 json=req_body,
-                params={"code": load_test_config.mail_send_function_code},
+                params={"code": function_endpoint.mail_send_function_code},
                 timeout=aiohttp.ClientTimeout(total=None)) as resp:
             time_now = datetime.now()
             return TestResult(resp.status, await resp.text(), time_now, function_endpoint)
@@ -191,17 +191,17 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
             print(f"{num_successful} / {number_of_intervals} tests were successfully sent")
 
             # If there were any non-successful tests, print the reasons
+            errors_range = list(range(400, 500)) + [504]
             if num_successful < number_of_intervals:
-                # FOR DEBUG
-                # print("\nReasons for failures:")
+
                 failed_sends = [result for result in test_results if result.status != 200]
                 number_of_intervals = len(
-                    [test for test in failed_sends if test.status in list(range(400, 500)) + [504]])
+                    [test for test in failed_sends if test.status in errors_range])
 
-                unresolvable_exceptions += [test for test in failed_sends if
-                                            test.status not in list(range(400, 500)) + [504]]
+                unresolvable_exceptions += [test for test in failed_sends if test.status not in errors_range]
                 removed_endpoints = []
-
+                # FOR DEBUG
+                # print("\nReasons for failures:")
                 for failed_result in failed_sends:
                     # FOR DEBUG
                     # print(
@@ -210,13 +210,14 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                     #     f"\t{failed_result.time.isoformat()} - {failed_result.status} status ")
                     # if not failed_result.message:
                     #     print(failed_result)
-                    errors_range = list(range(400, 500)) + [504]
+
                     if failed_result.status in errors_range and failed_result.function_endpoint in load_test_config.mail_send_function_endpoints:
                         load_test_config.mail_send_function_endpoints.remove(failed_result.function_endpoint)
                         removed_endpoints.append(failed_result.function_endpoint)
                 print("\n")
                 for function_endpoint in removed_endpoints:
-                    print(f'{function_endpoint} - Failed to send tests')
+                    print(f'{function_endpoint.function} - Failed to send tests')
+                    print(load_test_config.mail_send_function_endpoints)
                 if not number_of_intervals:
                     break
             else:

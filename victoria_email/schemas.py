@@ -35,6 +35,12 @@ class Load:
         self.attachment_count = attachment_count
 
 
+class Function:
+    def __init__(self, function: str, mail_send_function_code: str):
+        self.function = function
+        self.mail_send_function_code = mail_send_function_code
+
+
 class DistributionSchema(Schema):
     file = fields.Str(required=True)
     weight = fields.Float(required=True)
@@ -42,6 +48,18 @@ class DistributionSchema(Schema):
     @post_load
     def make_config(self, data, **kwargs):
         return Distribution(**data)
+
+
+class FunctionSchema(Schema):
+    function = fields.Str(required=True)
+    mail_send_function_code = fields.Str(required=True)
+
+    @post_load
+    def make_config(self, data, **kwargs):
+        return Function(**data)
+
+    def __str__(self):
+        return f'{self.function}'
 
 
 class LoadSchema(Schema):
@@ -55,13 +73,8 @@ class LoadSchema(Schema):
 
 class LoadTestConfigSchema(Schema):
     """Marshmallow schema for the load testing config section."""
-    mail_send_function_endpoints = fields.List(fields.Str(allow_none=False,
-                                                         validate=validate.URL(
-                                                             relative=False,
-                                                             schemes="https")),
-                                              required=True,
-                                              )
-    mail_send_function_code = fields.Str(required=True, allow_none=False)
+    mail_send_function_endpoints = fields.List(fields.Nested(FunctionSchema), required=True)
+    # mail_send_function_code = fields.Str(required=True, allow_none=False)
     tenant_ids = fields.List(fields.UUID(allow_none=False), required=False)
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
     load = fields.Nested(LoadSchema, required=False)
@@ -77,14 +90,13 @@ class LoadTestConfig:
 
     Attributes:
         mail_send_function_endpoints: The HTTP endpoints of the going-postal backend.
-        mail_send_function_code: The auth code to use the Azure function backend.
         tenant_ids: The tenant ID(s) to attach to the sent tests.
         timeout: The SMTP sending timeout to use.
         load:
     """
-    mail_send_function_endpoints: list
-    mail_send_function_code: str
+    # mail_send_function_code: str
     timeout: float
+    mail_send_function_endpoints: field(default_factory=Function)
     load: Load = field(default_factory=Load)
     tenant_ids: List[UUID] = field(default_factory=list)
 

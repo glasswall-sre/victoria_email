@@ -1,5 +1,5 @@
 load_test:
-  mail_send_function_endpoints: [https://unittest-going-postal.azurewebsites.net/api/send]
-  mail_send_function_code: unittest
-  tenant_ids: [973037a8-eb2c-4637-9e6e-fd2bb1cf0e58]
+  - function: https://unittest-going-postal.azurewebsites.net/api/send
+    mail_send_function_code: "unittest"
+  tenant_ids: [ 973037a8-eb2c-4637-9e6e-fd2bb1cf0e58 ]
   timeout: 10.0
