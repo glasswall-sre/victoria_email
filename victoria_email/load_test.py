@@ -217,7 +217,6 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
                 print("\n")
                 for function_endpoint in removed_endpoints:
                     print(f'{function_endpoint.function} - Failed to send tests')
-                    print(load_test_config.mail_send_function_endpoints)
                 if not number_of_intervals:
                     break
             else:
@@ -226,11 +225,11 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         print(f"total {successful_tests} / {total_tests} tests were successfully sent")
 
         # FOR DEBUG
-        # if len(unresolvable_exceptions):
-        #     print("\nUnresolvable failures:")
-        #
-        #     for failed_result in unresolvable_exceptions:
-        #         print(f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
+        if len(unresolvable_exceptions):
+            print("\nUnresolvable failures:")
+
+            for failed_result in unresolvable_exceptions:
+                print(f"\t{failed_result.time.isoformat()} - {failed_result.status} error - {failed_result.message}")
 
         if not retry_count < max_retries:
             print('\nMax retries exceeded')
