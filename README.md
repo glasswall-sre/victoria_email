@@ -36,16 +36,6 @@ email:
 
     tenant_ids: [<tenant ID(s) to attach to the email>]
     timeout: 10.0
-    load:  # Optional for load testing
-      distribution:
-      - file: data/test.png
-        weight: 10
-      - file: data/test.bmp
-        weight: 90
-      attachment_count:
-      - 25
-      - 70
-      - 5
   mail_toil:
     service_bus_connection_strings:
       <cluster-name>: <encrypted data>
