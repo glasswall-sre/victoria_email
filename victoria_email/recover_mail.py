@@ -29,13 +29,15 @@ def recover(cfg: config.MailToilConfig, cluster: str, input_file: str,
         plugin_cfg: The email plugin config object.
     """
     encryption_provider = plugin_cfg.victoria_config.get_encryption()
-    storage_conn_str = encryption_provider.decrypt_str(
-        cfg.get_storage_account(cluster))
+
+    # storage_conn_str = encryption_provider.decrypt_str(
+    #     cfg.get_storage_account(cluster))
+    storage_conn_str = cfg.get_storage_account(cluster).data
     if storage_conn_str is None:
         raise SystemExit(1)
 
     # connect to blob
-    blob_client = blob_storage.connect(cfg.get_storage_account(cluster))
+    blob_client = blob_storage.connect(storage_conn_str)
 
     tx_ids = []
     with open(input_file, "r") as tx_id_file:
