@@ -61,8 +61,7 @@ class MailToilConfig:
     """
     def __init__(self,
                  service_bus_connection_strings: Dict[str, EncryptionEnvelope],
-                 queues: List[str], storage_accounts: Dict[str,
-                                                           EncryptionEnvelope],
+                 queues: List[str], storage_accounts: Dict[str, EncryptionEnvelope],
                  vault_dir: str) -> None:
         self.service_bus_connection_strings = service_bus_connection_strings
         self.queues = queues
