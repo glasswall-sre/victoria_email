@@ -27,15 +27,11 @@ class MailToilConfigSchema(Schema):
         vault_dir (fields.Str): The path to the vault.
     """
     service_bus_connection_strings = fields.Dict(keys=fields.Str(),
-                                                 values=fields.Nested(
-                                                     EncryptionEnvelopeSchema,
-                                                     allow_none=False),
+                                                 values=fields.Str(),
                                                  required=True)
     queues = fields.List(fields.Str(), required=True)
     storage_accounts = fields.Dict(keys=fields.Str(),
-                                   values=fields.Nested(
-                                       EncryptionEnvelopeSchema,
-                                       allow_none=False),
+                                   values=fields.Str(),
                                    required=True)
     vault_dir = fields.Str(required=True)
 
