@@ -28,11 +28,11 @@ def recover(cfg: config.MailToilConfig, cluster: str, input_file: str,
         smtp_addr: The SMTP address to send to.
         plugin_cfg: The email plugin config object.
     """
-    encryption_provider = plugin_cfg.victoria_config.get_encryption()
+    #encryption_provider = plugin_cfg.victoria_config.get_encryption()
 
     # storage_conn_str = encryption_provider.decrypt_str(
     #     cfg.get_storage_account(cluster))
-    storage_conn_str = cfg.get_storage_account(cluster).data
+    storage_conn_str = cfg.get_storage_account(cluster)
     if storage_conn_str is None:
         raise SystemExit(1)
 
