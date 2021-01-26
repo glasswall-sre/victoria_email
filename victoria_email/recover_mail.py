@@ -17,14 +17,15 @@ from .core import config, service_bus, blob_storage, mail_reconstruction
 from .schemas import EmailConfig
 
 
-def recover(cfg: config.MailToilConfig, cluster: str, input_file: str,
+def recover(cfg: config.MailToilConfig, cluster: str, file: str, transaction_id: str,
             smtp_addr: str, plugin_cfg: EmailConfig) -> None:
     """Perform the mailtoil recover functionality.
 
     Args:
         cfg: The mail toil config.
         cluster: The cluster to recover.
-        input_file: The file path to the input tx ID txt file.
+        file: The file path to the input tx ID txt file.
+        transaction_id: Transaction Id.
         smtp_addr: The SMTP address to send to.
         plugin_cfg: The email plugin config object.
     """
@@ -40,9 +41,13 @@ def recover(cfg: config.MailToilConfig, cluster: str, input_file: str,
     blob_client = blob_storage.connect(storage_conn_str)
 
     tx_ids = []
-    with open(input_file, "r") as tx_id_file:
-        for line in tx_id_file:
-            tx_ids.append(line.strip())
+
+    if file:
+        with open(file, "r") as tx_id_file:
+            for line in tx_id_file:
+                tx_ids.append(line.strip())
+    elif transaction_id:
+        tx_ids.append(transaction_id)
 
     with smtplib.SMTP(smtp_addr) as smtp:
         for tx_id in tx_ids:
