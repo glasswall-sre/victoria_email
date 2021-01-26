@@ -155,12 +155,17 @@ def replay(cfg: schemas.EmailConfig, cluster: str) -> None:
 
 @root_cmd.command()
 @click.argument("cluster", nargs=1, type=str)
-@click.option("-i",
-              "--input",
+@click.option("-f",
+              "--file",
               metavar="FILE",
               type=str,
-              required=True,
+              required=False,
               help="TXT file containing transaction IDs to replay.")
+@click.option("-id",
+              "--transaction-id",
+              type=str,
+              required=False,
+              help="Transaction ID to replay.")
 @click.option("-o",
               "--output",
               metavar="URL",
@@ -168,7 +173,7 @@ def replay(cfg: schemas.EmailConfig, cluster: str) -> None:
               required=True,
               help="The SMTP endpoint to replay mail to.")
 @click.pass_obj
-def recover(cfg: schemas.EmailConfig, cluster: str, input: str,
+def recover(cfg: schemas.EmailConfig, cluster: str, file: str, transaction_id: str,
             output: str) -> None:
     """Replay mail from blob storage through SaaS.
 
@@ -178,10 +183,17 @@ def recover(cfg: schemas.EmailConfig, cluster: str, input: str,
 
     \b
     Usage example:
-    $ victoria email recover uksprod -i tx-ids.txt -o localhost:25
+
+    \b
+    Replay mail from a file containing transaction ids
+    $ victoria email recover uksprod -f tx-ids.txt -o localhost:25
+
+    \b
+    Replay mail from a specific transaction id
+    $ victoria email recover uksprod -id txId -o localhost:25
     """
     ensure_mailtoil(cfg)
-    recover_mail.recover(cfg.mail_toil, cluster, input, output, cfg)
+    recover_mail.recover(cfg.mail_toil, cluster, file, transaction_id,  output, cfg)
 
 
 @root_cmd.command()

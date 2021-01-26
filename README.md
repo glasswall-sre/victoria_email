@@ -229,10 +229,16 @@ fd18b432-4307-4fbb-a7f6-e149bace0bae
 ...
 ```
 
-For example, to replay those transactions in file `bad-tx.txt` (with SMTP Rx
+For example, to replay multiple transactions in file `bad-tx.txt` (with SMTP Rx
 port forwarded on port 25 via `kubectl`):
 ```
-$ victoria email recover uksprod1 -i bad-tx.txt -o localhost:25
+$ victoria email recover uksprod1 -f bad-tx.txt -o localhost:25
+```
+
+For example, to replay single transaction `896551ff-520f-4055-8452-36b4de64f0b4` (with SMTP Rx
+port forwarded on port 25 via `kubectl`):
+```
+$ victoria email recover uksprod1 -id 896551ff-520f-4055-8452-36b4de64f0b4 -o localhost:25
 ```
 
 The cluster name given here corresponds to a key in `storage_accounts` in the
