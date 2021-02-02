@@ -55,9 +55,11 @@ def replay(cfg: config.MailToilConfig, cluster: str, plugin_cfg: EmailConfig):
         cluster: The cluster to replay from.
         plugin_cfg: The email plugin config.
     """
-    encryption_provider = plugin_cfg.victoria_config.get_encryption()
-    service_bus_conn_str = encryption_provider.decrypt_str(
-        cfg.get_service_bus_connection_str(cluster))
+    #encryption_provider = plugin_cfg.victoria_config.get_encryption()
+    #service_bus_conn_str = encryption_provider.decrypt_str(
+    #    cfg.get_service_bus_connection_str(cluster))
+    service_bus_conn_str = cfg.get_service_bus_connection_str(cluster)
+
     if service_bus_conn_str is None:
         raise SystemExit(1)
 
