@@ -17,18 +17,6 @@ from .core.util import get_random_items
 from .core.config import MailToilConfigSchema, MailToilConfig
 
 
-class Distribution:
-    def __init__(self, file: str, weight: float):
-        self.file = file
-        self.weight = weight
-
-    @classmethod
-    def get_random_distributions(cls):
-        properties = get_blob_properties('fileattachments', CONNECTION_STR)
-        return [cls(attachment.name, attachment.size) for attachment in
-                get_random_items(properties, count=100)]
-
-
 class Load:
     def __init__(self, distribution: List[Dict] = None, attachment_count: List[int] = None):
         self.distribution = distribution
@@ -78,6 +66,9 @@ class LoadTestConfigSchema(Schema):
     tenant_ids = fields.List(fields.UUID(allow_none=False), required=False)
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
     load = fields.Nested(LoadSchema, required=False)
+    attachments = fields.Dict(keys=fields.Str(),
+                              values=fields.Str(),
+                              required=False)
 
     @post_load
     def make_config(self, data, **kwargs):
@@ -93,12 +84,14 @@ class LoadTestConfig:
         tenant_ids: The tenant ID(s) to attach to the sent tests.
         timeout: The SMTP sending timeout to use.
         load:
+        attachments: (fields.Dict[str, str]): mapping of storage_connection_strings with their respective value
     """
     # mail_send_function_code: str
     timeout: float
     mail_send_function_endpoints: field(default_factory=Function)
     load: Load = field(default_factory=Load)
     tenant_ids: List[UUID] = field(default_factory=list)
+    attachments: Dict[str, str] = field(default_factory=dict)
 
 
 class EmailConfigSchema(Schema):
@@ -127,3 +120,17 @@ class EmailConfig:
     """
     load_test: LoadTestConfig
     mail_toil: Optional[MailToilConfig]
+
+
+class Distribution:
+    def __init__(self, file: str, weight: float):
+        self.file = file
+        self.weight = weight
+
+    @classmethod
+    def get_random_distributions(cls, load_test_config: LoadTestConfig):
+        conn_str = load_test_config.attachments.get('storage_connection_strings') if load_test_config.attachments \
+            else CONNECTION_STR
+        properties = get_blob_properties('fileattachments', conn_str)
+        return [cls(attachment.name, attachment.size) for attachment in
+                get_random_items(properties, count=100)]
