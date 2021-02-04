@@ -125,7 +125,7 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         if not tenant_ids:
             tenant_ids = load_test_config.tenant_ids if len(
                 load_test_config.tenant_ids) > 0 else generate_random_uuids()
-        distributions = Distribution.get_random_distributions()
+        distributions = Distribution.get_random_distributions(load_test_config)
         load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
         load_test_config.tenant_ids = tenant_ids
 
