@@ -189,17 +189,17 @@ to a developer for them to help identify an issue.
 
 Example of reconstructing mail with a transaction ID:
 ```
-$ victoria email reconstruct uksprod1 -i <guid> -o output_folder
+$ victoria email reconstruct uksprod1 -id <guid> -o output_folder
 ```
 
 Example of reconstructing and anonymising mail:
 ```
-$ victoria email reconstruct useprod3 -i <guid> -o output_folder --anon
+$ victoria email reconstruct useprod3 -id <guid> -o output_folder --anon
 ```
 
 Example of reconstructing multiple transactions:
 ```
-$ victoria email reconstruct uksprod2 -i <guid1> -i <guid2> -i <guid3> -o output_folder
+$ victoria email reconstruct uksprod2 -id <guid1> -id <guid2> -id <guid3> -o output_folder
 ```
 
 Example of reconstructing mail from service bus dead letters:
