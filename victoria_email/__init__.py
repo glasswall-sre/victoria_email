@@ -109,7 +109,7 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
               required=True,
               help="The directory to write reconstructed mail to.")
 @click.option("-a", "--anon", type=bool, is_flag=True)
-@click.option("-i",
+@click.option("-id",
               "--transaction-id",
               multiple=True,
               type=str,
@@ -128,11 +128,11 @@ def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
 
     \b
     Reconstruct a specific transaction ID
-    $ victoria email reconstruct useprod2 -i <guid> -o output_dir
+    $ victoria email reconstruct useprod2 -id <guid> -o output_dir
 
     \b
     Reconstruct a specific transaction ID, anonymising contents
-    $ victoria email reconstruct useprod4 -i <guid> -o output_dir --anon
+    $ victoria email reconstruct useprod4 -id <guid> -o output_dir --anon
     """
     ensure_mailtoil(cfg)
     reconstruct_mail.reconstruct(cfg.mail_toil, cluster, output,
