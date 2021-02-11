@@ -1,14 +1,30 @@
-# victoria_email
-Victoria plugin for managing the Glasswall Rebuild for Email platform.
+<div align="center" style="text-align:center">
+<h1> Victoria Email </h1>
+
+Victoria Email is a V.I.C.T.O.R.I.A is a plugin that allows you to manipulate emails through an email platform 
+
+![Gated Pipeline](https://github.com/glasswall-sre/victoria_email/workflows/Gated%20Pipeline/badge.svg)
+![CI Pipeline](https://github.com/glasswall-sre/victoria_email/workflows/CI%20Pipeline/badge.svg)
+![CD Pipeline](https://github.com/glasswall-sre/victoria_email/workflows/CD%20Pipeline/badge.svg)
+![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=alert_status&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)
+![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=sqale_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)
+![Reliability](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=reliability_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=security_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)](https://sonarcloud.io/dashboard?id=victoria-email)
+
+</div>
 
 ## Features
 - Load testing SMTP endpoints
+- Sending single test emails from the CLI
+- Reconstructing email from a deconstructed state
+- Recovering email from Dead Letter Azure Service Bus Queues
 
 ## User guide
 
 ### Prerequisites
 - Python 3.7+
 - Pip
+- [Victoria](https://github.com/glasswall-sre/victoria)
 
 ### Installation
 ```
@@ -22,35 +38,35 @@ This plugin expects a section in your Victoria config file's `plugins_config` or
 `plugins_config_location`. Its key is `email`. 
 
 An easy way to edit your config file if you have VSCode installed is by running:
-`code $(victoria config path)`.
+`code "$(victoria config path)"`.
 
 A full config example is:
 ```yaml
 email:
   load_test:
     mail_send_function_endpoints:
-      - function: "https://sls-weur-dev-going-postal.azurewebsites.net/api/send",
+      - function: "<Azure Function endpoint URL>",
         mail_send_function_code: <the code to access the Azure Function>
-      - function: "https://sls-seur-dev-going-postal.azurewebsites.net/api/send",
+      - function: "<Azure Function endpoint URL>",
         mail_send_function_code: <the code to access the Azure Function>
-
     tenant_ids: [<tenant ID(s) to attach to the email>]
     timeout: 10.0
+    attachments:
+      storage_connection_strings: <encrypted data>
   mail_toil:
     service_bus_connection_strings:
       <cluster-name>: <encrypted data>
-
-    # these are the queues we want to check for dead letters
+      <cluster-name>: <encrypted data>
+    # these are the Azure Service Bus Queues we want to check for dead letters
     queues:
       - "queues"
       - "you"
       - "want"
       - "to"
       - "check"
-
     storage_accounts:
       <cluster-name>: <encrypted data>
-
+      <cluster-name>: <encrypted data>
     # this is the directory to use when backing up replayed messages
     vault_dir: "vault"
 ```
@@ -82,7 +98,7 @@ but for a whistlestop tour:
    ```yaml
    mail_toil:
      service_bus_connection_strings:
-       uksprod1:
+       cluster_name:
          data: <snip>
          iv: <snip>
          key: <snip>
@@ -99,18 +115,17 @@ The `loadtest` command can be used to load test an SMTP endpoint.
 
 It accepts the following **required** arguments:
 - `-e`, `--endpoint`: The SMTP endpoint to send to, with optional port i.e. 
-  `smtp.example.com:465`. If the port is unspecified, i.e. `smtp.example.com`
-  then port 25 is used.
-- `-r`, `--recipient`: The email address to send mail to, i.e. `test@example.com`.
-- `-s`, `--sender`: The email address to send mail from, i.e. `test@example.com`.
+  `smtp.example.com:465` if the port is unspecified, i.e. `smtp.example.com`
+  then port 25 is used
+- `-r`, `--recipient`: The email address to send mail to, i.e. `test@example.com`
+- `-s`, `--sender`: The email address to send mail from, i.e. `test@example.com`
 
-Running with just the required arguments will send a single test.
+Running with just the required arguments will send a single test
 
 It also accepts the following **optional** arguments:
-- `-n`, `--frequency`: The number of tests to send per second. Defaults to 1.
-- `-t`, `--duration`: The number of seconds to run the test for. Defaults to 1.
-- `-i`, `--tenant_ids`: Custom tenant id. Can be used multiple times. Defaults to random.
-
+- `-n`, `--frequency`: The number of tests to send per second. Defaults to 1
+- `-t`, `--duration`: The number of seconds to run the test for. Defaults to 1
+- `-i`, `--tenant_ids`: Custom tenant id. Can be used multiple times. Defaults to random
 
 All of this information can be found by running `victoria email loadtest -h`.
 
@@ -142,9 +157,9 @@ It accepts one argument, the path to the manifest file to send.
 
 The format of the manifest file is as follows:
 ```yaml
-sender: "sgibson@glasswallsolutions.com"
-to: ["sgibson@glasswallsolutions.com"]
-smtp_server: localhost
+sender: "test@example.com"
+to: ["test@example.com"]
+smtp_server: smtp.endpoint.com
 tenant_id: <guid>
 port: 25
 attach:
@@ -172,43 +187,35 @@ and replay them.
 
 Example:
 ```
-$ victoria email replay uksprod1
+$ victoria email replay cluster
 ```
 
-Will replay dead letters using the service bus connection string under key `uksprod1`
+Will replay dead letters using the service bus connection string under key `cluster`
 in the config file's `service_bus_connection_strings` section.
 
 The queues it scans can be modified by editiing the config file's `queues` section.
 
 #### Reconstructing mail
 The `reconstruct` command can be used to reconstruct emails to files from transaction IDs.
-It can also scan dead letter queues and reconstruct mail from the dead lettered transactions.
 
-It can also optionally anonymise the email contents if you need to give the email
-to a developer for them to help identify an issue.
+It can also optionally anonymise the email contents if you need to give the email to a developer for them to help identify an issue.
 
 Example of reconstructing mail with a transaction ID:
 ```
-$ victoria email reconstruct uksprod1 -id <guid> -o output_folder
+$ victoria email reconstruct cluster -id <guid> -o output_folder
 ```
 
 Example of reconstructing and anonymising mail:
 ```
-$ victoria email reconstruct useprod3 -id <guid> -o output_folder --anon
+$ victoria email reconstruct cluster -id <guid> -o output_folder --anon
 ```
 
 Example of reconstructing multiple transactions:
 ```
-$ victoria email reconstruct uksprod2 -id <guid1> -id <guid2> -id <guid3> -o output_folder
+$ victoria email reconstruct cluster -id <guid1> -id <guid2> -id <guid3> -o output_folder
 ```
 
-Example of reconstructing mail from service bus dead letters:
-```
-$ victoria email reconstruct useprod4 -o output_folder
-```
-
-The cluster name given corresponds to keys in both `service_bus_connection_strings`
-and `storage_accounts` in the config.
+The cluster name given corresponds to keys in `storage_accounts` in the config
 
 #### Replaying mail through the system
 The `recover` command can replay mail through the system right from the beginning.
@@ -232,13 +239,13 @@ fd18b432-4307-4fbb-a7f6-e149bace0bae
 For example, to replay multiple transactions in file `bad-tx.txt` (with SMTP Rx
 port forwarded on port 25 via `kubectl`):
 ```
-$ victoria email recover uksprod1 -f bad-tx.txt -o localhost:25
+$ victoria email recover cluster -f bad-tx.txt -o smtp.endpoint.com:25
 ```
 
 For example, to replay single transaction `896551ff-520f-4055-8452-36b4de64f0b4` (with SMTP Rx
 port forwarded on port 25 via `kubectl`):
 ```
-$ victoria email recover uksprod1 -id 896551ff-520f-4055-8452-36b4de64f0b4 -o localhost:25
+$ victoria email recover cluster -id 896551ff-520f-4055-8452-36b4de64f0b4 -o localhost:25
 ```
 
 The cluster name given here corresponds to a key in `storage_accounts` in the
@@ -251,9 +258,7 @@ config.
 - Pipenv
 
 ### Quick start
-1. Clone this repo.
-2. In the root of the repo, run `pipenv sync --dev`.
-3. You need to export your azure connection string for blob storage: 
-   `export AZURE_STORAGE_CONNECTION_STRING="YOUR AZURE CONNECTION STRING"`
-4. You're good to go. You can run the plugin during development with 
-   `pipenv run victoria email`.
+1. Clone this repo
+2. In the root of the repo, run `pipenv sync --dev`
+3. You're good to go. You can run the plugin during development with 
+   `pipenv run victoria email`
