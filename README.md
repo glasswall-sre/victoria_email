@@ -8,7 +8,7 @@ Victoria Email is a V.I.C.T.O.R.I.A is a plugin that allows you to manipulate em
 ![CD Pipeline](https://github.com/glasswall-sre/victoria_email/workflows/CD%20Pipeline/badge.svg)
 ![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=sqale_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)
 ![Reliability](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=reliability_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=security_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)](https://sonarcloud.io/dashboard?id=victoria-email)
+![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=victoria-email&metric=security_rating&token=6f7ff43b4d5e3c325dd62e49e71acc338009be41)
 
 </div>
 
