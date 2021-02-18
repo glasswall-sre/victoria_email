@@ -29,7 +29,7 @@ def connect(connection_str: str) -> BlobServiceClient:
     Returns:
         BlobServiceClient: The blob service to use.
     """
-    return BlobServiceClient.from_connection_string(connection_str)
+    return BlobServiceClient.from_connection_string(connection_str.replace(';;', ';'))
 
 
 def get_mime_message(transaction_id: str,

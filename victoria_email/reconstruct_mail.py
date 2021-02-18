@@ -61,12 +61,10 @@ def reconstruct(cfg: config.MailToilConfig, cluster: str, output_dir: str,
         anonymise: Whether we should anonymise.
         plugin_cfg: The email plugin config object.
     """
-    #encryption_provider = plugin_cfg.victoria_config.get_encryption()
-    #service_bus_conn_str = encryption_provider.decrypt_str(
-    #    cfg.get_service_bus_connection_str(cluster))
-    #storage_conn_str = encryption_provider.decrypt_str(
-    #    cfg.get_storage_account(cluster))
-    storage_conn_str = cfg.get_storage_account(cluster)
+    encryption_provider = plugin_cfg.victoria_config.get_encryption()
+    storage_conn_str = encryption_provider.decrypt_str(
+        cfg.get_storage_account(cluster))
+    #storage_conn_str = cfg.get_storage_account(cluster)
     if storage_conn_str is None:
         raise SystemExit(1)
 
@@ -75,7 +73,9 @@ def reconstruct(cfg: config.MailToilConfig, cluster: str, output_dir: str,
     # if transaction IDs weren't given then get them from dead letters
     # instead
     if len(transaction_ids) == 0:
-        service_bus_conn_str = cfg.get_service_bus_connection_str(cluster)
+        service_bus_conn_str = encryption_provider.decrypt_str(
+            cfg.get_service_bus_connection_str(cluster))
+        #service_bus_conn_str = cfg.get_service_bus_connection_str(cluster)
         if service_bus_conn_str is None:
             raise SystemExit(1)
         transaction_ids = get_dead_letters_from_service_bus(
