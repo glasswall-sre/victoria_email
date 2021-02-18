@@ -11,6 +11,7 @@ from uuid import UUID
 from typing import List, Dict
 
 from marshmallow import Schema, fields, post_load, validate
+from victoria.encryption.schemas import EncryptionEnvelopeSchema, EncryptionEnvelope
 
 from .core.blob_storage import CONNECTION_STR, get_blob_properties
 from .core.util import get_random_items
@@ -67,7 +68,9 @@ class LoadTestConfigSchema(Schema):
     timeout = fields.Float(required=False, allow_none=False, missing=1.0)
     load = fields.Nested(LoadSchema, required=False)
     attachments = fields.Dict(keys=fields.Str(),
-                              values=fields.Str(),
+                              values=fields.Nested(
+                                EncryptionEnvelopeSchema,
+                                allow_none=False),
                               required=False)
 
     @post_load
@@ -91,7 +94,7 @@ class LoadTestConfig:
     mail_send_function_endpoints: field(default_factory=Function)
     load: Load = field(default_factory=Load)
     tenant_ids: List[UUID] = field(default_factory=list)
-    attachments: Dict[str, str] = field(default_factory=dict)
+    attachments: Dict[str, EncryptionEnvelope] = field(default_factory=dict)
 
 
 class EmailConfigSchema(Schema):
