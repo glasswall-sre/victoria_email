@@ -24,8 +24,7 @@ import aiohttp
 import roundrobin
 
 from .core.util import generate_random_numbers, generate_random_uuids
-from .schemas import LoadTestConfig, Distribution, Function
-
+from .schemas import LoadTestConfig, Distribution, Function, EmailConfig
 
 @dataclass
 class TestResult:
@@ -106,7 +105,7 @@ async def run_single_test(session: aiohttp.ClientSession, endpoint: str,
 
 async def perform_load_test(frequency: int, endpoint: str, duration: int,
                             recipient: str, sender: str, tenant_ids: list,
-                            load_test_config: LoadTestConfig) -> None:
+                            load_test_config: LoadTestConfig, plugin_cfg: EmailConfig) -> None:
     """Asynchronously run a load test with a given frequency and duration.
 
     Args:
@@ -125,7 +124,7 @@ async def perform_load_test(frequency: int, endpoint: str, duration: int,
         if not tenant_ids:
             tenant_ids = load_test_config.tenant_ids if len(
                 load_test_config.tenant_ids) > 0 else generate_random_uuids()
-        distributions = Distribution.get_random_distributions(load_test_config)
+        distributions = Distribution.get_random_distributions(load_test_config, plugin_cfg)
         load_test_config.load.attachment_count = load_test_config.load.attachment_count if None else generate_random_numbers()
         load_test_config.tenant_ids = tenant_ids
 

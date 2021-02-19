@@ -131,9 +131,12 @@ class Distribution:
         self.weight = weight
 
     @classmethod
-    def get_random_distributions(cls, load_test_config: LoadTestConfig):
-        conn_str = load_test_config.attachments.get('storage_connection_strings') if load_test_config.attachments \
+    def get_random_distributions(cls, load_test_config: LoadTestConfig, plugin_cfg: EmailConfig):
+        encryption_provider = plugin_cfg.victoria_config.get_encryption()
+        conn_str = encryption_provider.decrypt_str(load_test_config.attachments.get('storage_connection_strings')) \
+            if load_test_config.attachments \
             else CONNECTION_STR
+
         properties = get_blob_properties('fileattachments', conn_str)
         return [cls(attachment.name, attachment.size) for attachment in
                 get_random_items(properties, count=100)]

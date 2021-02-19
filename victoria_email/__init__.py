@@ -98,7 +98,7 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
     loop.set_exception_handler(lambda loop, context: "Error")
     loop.run_until_complete(
         load_test.perform_load_test(frequency, endpoint, duration, recipient,
-                                    sender, tenant_ids, cfg.load_test))
+                                    sender, tenant_ids, cfg.load_test, cfg))
 
 
 @root_cmd.command()
