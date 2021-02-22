@@ -34,7 +34,7 @@ def test_request_body():
     }
     print(".")
     # Assert
-    assert 1 == 1
+    assert 'load' in req_body
 
 
 def test_more():
@@ -72,4 +72,4 @@ def test_more():
         }
 
     # Assert
-    assert 1 == 1
+    assert 'load' in req_body
