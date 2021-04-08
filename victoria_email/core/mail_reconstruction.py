@@ -147,7 +147,7 @@ def write_mime_message_payloads(
             # for some reason, outlook doesn't like EML files with HTML in them,
             # so we blank out the HTML payload here to display it correctly
             part.set_payload("")
-        elif is_file(part):
+        elif is_file(part) and not part.is_multipart():
             write_attachment(output_dir, transaction_id, part)
 
 
