@@ -206,7 +206,7 @@ $ victoria email reconstruct cluster -id <guid> -o local -loc output_folder
 
 Example of reconstructing mail with a transaction ID on azure blob:
 ```
-$ victoria email reconstruct cluster -id <guid> -o blob -loc output_folder -blob-conn <conn-str-in-single-quotes>
+$ victoria email reconstruct cluster_name -id <guid> -o blob -loc container_name -blob-conn <conn-str-in-single-quotes>
 ```
 
 Example of reconstructing and anonymising mail on local machine:
