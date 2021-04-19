@@ -8,7 +8,7 @@ def repo_file_as_string(file_path: str) -> str:
 
 setup(install_requires=[
     "victoria", "aiohttp>=3.5.4", "aiorun", "cchardet", "aiodns",
-    "azure-servicebus<=0.50.1", "azure-storage-blob>=2.1.0", "sremail", "roundrobin"
+    "azure-servicebus<=0.50.1", "azure-storage-blob>=2.1.0", "sremail", "roundrobin", "boto3"
 ],
       name="victoria_email",
       version="#{VERSION}#",
