@@ -195,23 +195,28 @@ in the config file's `service_bus_connection_strings` section.
 The queues it scans can be modified by editiing the config file's `queues` section.
 
 #### Reconstructing mail
-The `reconstruct` command can be used to reconstruct emails to files from transaction IDs.
+The `reconstruct` command can be used to reconstruct emails to files, cloud storage(Azure Blob/AWS S3) from transaction IDs.
 
 It can also optionally anonymise the email contents if you need to give the email to a developer for them to help identify an issue.
 
-Example of reconstructing mail with a transaction ID:
+Example of reconstructing mail with a transaction ID on local machine:
 ```
-$ victoria email reconstruct cluster -id <guid> -o output_folder
+$ victoria email reconstruct cluster -id <guid> -o local -loc output_folder
 ```
 
-Example of reconstructing and anonymising mail:
+Example of reconstructing mail with a transaction ID on azure blob:
 ```
-$ victoria email reconstruct cluster -id <guid> -o output_folder --anon
+$ victoria email reconstruct cluster -id <guid> -o blob -loc output_folder -blob-conn <conn-str-in-single-quotes>
+```
+
+Example of reconstructing and anonymising mail on local machine:
+```
+$ victoria email reconstruct cluster -id <guid> -o local -loc output_folder --anon
 ```
 
 Example of reconstructing multiple transactions:
 ```
-$ victoria email reconstruct cluster -id <guid1> -id <guid2> -id <guid3> -o output_folder
+$ victoria email reconstruct cluster -id <guid1> -id <guid2> -id <guid3> -o local -loc output_folder
 ```
 
 The cluster name given corresponds to keys in `storage_accounts` in the config

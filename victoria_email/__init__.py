@@ -107,7 +107,7 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
               "--output",
               type=str,
               required=True,
-              help="The directory to write reconstructed mail to.")
+              help="The output to write reconstructed mail to.")
 @click.option("-a", "--anon", type=bool, is_flag=True)
 @click.option("-id",
               "--transaction-id",
@@ -115,28 +115,47 @@ def loadtest(cfg: schemas.EmailConfig, frequency: int, endpoint: str,
               type=str,
               help="Cherry-pick GUIDs from blob storage to reconstruct. "
               "This bypasses dead letter scanning.")
+@click.option("-loc",
+              "--output-location",
+              type=str,
+              required=True,
+              help="The output location to write reconstructed mail to.")
+@click.option("-blob-conn",
+              "--blob-conn",
+              type=str,
+              help="The blob storage account connection string to write reconstructed mail to.")
+@click.option("-s3-access-key",
+              "--s3-access-key",
+              type=str,
+              help="The s3 access key to write reconstructed mail to.")
+@click.option("-s3-secret-key",
+              "--s3-secret-key",
+              type=str,
+              help="The s3 secret key to write reconstructed mail to.")
 @click.pass_obj
 def reconstruct(cfg: schemas.EmailConfig, cluster: str, output: str,
-                anon: bool, transaction_id: List[str]) -> None:
+                anon: bool, transaction_id: List[str], output_location: str, blob_conn: str, s3_access_key: str,
+                s3_secret_key: str) -> None:
     """Reconstruct mail from blob storage.
 
     Can also scan dead letter queues to find mail that needs to be reconstructed.
 
     \b
     Reconstruct mail in dead letters:
-    $ victoria email reconstruct uksprod1 -o output_dir
+    $ victoria email reconstruct uksprod1 -o local -loc output_dir
 
     \b
     Reconstruct a specific transaction ID
-    $ victoria email reconstruct useprod2 -id <guid> -o output_dir
+    $ victoria email reconstruct useprod2 -id <guid> -o local -loc output_dir
 
     \b
     Reconstruct a specific transaction ID, anonymising contents
-    $ victoria email reconstruct useprod4 -id <guid> -o output_dir --anon
+    $ victoria email reconstruct useprod4 -id <guid> -o local -loc output_dir --anon
     """
     ensure_mailtoil(cfg)
     reconstruct_mail.reconstruct(cfg.mail_toil, cluster, output,
-                                 transaction_id, anon, cfg)
+                                 transaction_id, anon, cfg, output_location, blob_conn,
+                                 s3_access_key, s3_secret_key)
 
 
 @root_cmd.command()
